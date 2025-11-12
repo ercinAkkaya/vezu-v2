@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "439217544713",
+    "project_id": "vezu-4196b",
+    "storage_bucket": "vezu-4196b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:439217544713:android:c4764710e58155daaba2d8",
+        "android_client_info": {
+          "package_name": "com.appistry.vezu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "439217544713-3oare18vb75v05vd0vit2gs3oc7g5e6t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.appistry.vezu",
+            "certificate_hash": "6f9975877fac332b86406d1e44b568c184604b6d"
+          }
+        },
+        {
+          "client_id": "439217544713-crtf1pp0t57j3ofkpihvmoldc4e03c1r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnp5HMk3WPXasYXL0xoBHAr-VTDHnE98Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "439217544713-crtf1pp0t57j3ofkpihvmoldc4e03c1r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "439217544713-r92r0qn89cg8a4ftv66910dife6v28a6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.appistry.vezu"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
