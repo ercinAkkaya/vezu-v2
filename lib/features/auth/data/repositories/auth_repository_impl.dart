@@ -65,7 +65,7 @@ class AuthRepositoryImpl implements AuthRepository {
         firstName: names.$1,
         lastName: names.$2,
         email: firebaseUser.email,
-        profilePhotoUrl: firebaseUser.photoURL,
+        profilePhotoUrl: existingUser?.profilePhotoUrl ?? firebaseUser.photoURL,
         lastLoginDate: now,
         deviceToken: deviceToken,
         notificationEnabled: existingUser?.notificationEnabled ?? true,

@@ -13,6 +13,8 @@ import 'package:vezu/features/shell/presentation/cubit/bottom_nav_cubit.dart';
 import 'package:vezu/features/legal/presentation/privacy_policy_page.dart';
 import 'package:vezu/features/support/presentation/help_support_page.dart';
 
+import '../../../core/navigation/app_router.dart';
+
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
@@ -69,6 +71,36 @@ class ProfilePage extends StatelessWidget {
       );
     }
 
+    Future<void> confirmSignOut() async {
+      if (context.read<AuthCubit>().state.status == AuthStatus.loading) {
+        return;
+      }
+
+      final shouldSignOut = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: Text('profileLogoutConfirmTitle'.tr()),
+              content: Text('profileLogoutConfirmMessage'.tr()),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text('profileLogoutConfirmCancel'.tr()),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: Text('profileLogoutConfirmConfirm'.tr()),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+
+      if (!shouldSignOut || !context.mounted) {
+        return;
+      }
+      await context.read<AuthCubit>().signOut();
+    }
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -82,7 +114,19 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: BlocBuilder<AuthCubit, AuthState>(
+          child: BlocConsumer<AuthCubit, AuthState>(
+            listener: (context, state) {
+              if (state.status == AuthStatus.unauthenticated) {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  AppRoutes.auth,
+                  (route) => false,
+                );
+              } else if (state.status == AuthStatus.failure && state.hasError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage ?? 'authErrorGeneric'.tr())),
+                );
+              }
+            },
             builder: (context, authState) {
               final user = authState.user;
               final displayName = _resolveDisplayName(user) ?? 'profileSampleName'.tr();
@@ -90,6 +134,7 @@ class ProfilePage extends StatelessWidget {
               final avatarUrl = user?.profilePhotoUrl;
               final outfitsCount = (user?.totalOutfitsCreated ?? 0).toString();
               final subscriptionPlan = _subscriptionPlanFromString(user?.subscriptionPlan);
+              final isAuthLoading = authState.status == AuthStatus.loading;
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
@@ -276,41 +321,55 @@ class ProfilePage extends StatelessWidget {
                       tint: Colors.deepPurpleAccent,
                     ),
                     const SizedBox(height: 32),
-                    AppSurfaceCard(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 22,
-                        vertical: 18,
-                      ),
-                      backgroundColor: theme.colorScheme.error.withOpacity(0.12),
-                      borderColor: theme.colorScheme.error.withOpacity(0.2),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.error.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Icon(
-                              Icons.logout_rounded,
-                              color: theme.colorScheme.error,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Text(
-                              'profileLogout'.tr(),
-                              style: theme.textTheme.bodyLarge?.copyWith(
+                    GestureDetector(
+                      onTap: isAuthLoading ? null : confirmSignOut,
+                      behavior: HitTestBehavior.opaque,
+                      child: AppSurfaceCard(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 18,
+                        ),
+                        backgroundColor: theme.colorScheme.error.withOpacity(0.12),
+                        borderColor: theme.colorScheme.error.withOpacity(0.2),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.error.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Icon(
+                                Icons.logout_rounded,
                                 color: theme.colorScheme.error,
-                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ),
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            color: theme.colorScheme.error,
-                          ),
-                        ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                'profileLogout'.tr(),
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.colorScheme.error,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            if (isAuthLoading)
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: theme.colorScheme.error,
+                                ),
+                              )
+                            else
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                color: theme.colorScheme.error,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

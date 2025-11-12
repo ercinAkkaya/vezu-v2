@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vezu/core/navigation/app_router.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
 
@@ -61,11 +62,15 @@ class AuthPage extends StatelessWidget {
                               context.read<AuthCubit>().signInWithGoogle(),
                       icon: isLoading
                           ? const SizedBox(
-                              width: 20,
-                              height: 20,
+                              width: 22,
+                              height: 22,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.login_rounded),
+                          : SvgPicture.asset(
+                              'assets/svg/google.svg',
+                              width: 22,
+                              height: 22,
+                            ),
                       label: Text(
                         isLoading
                             ? 'loginLoading'.tr()

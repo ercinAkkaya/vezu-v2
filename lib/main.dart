@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vezu/core/base/base_location_service.dart';
 import 'package:vezu/core/navigation/app_router.dart';
 import 'package:vezu/core/theme/app_theme.dart';
 import 'package:vezu/core/utils/app_constants.dart';
@@ -27,7 +29,12 @@ import 'package:vezu/features/onboarding/data/repositories/onboarding_repository
 import 'package:vezu/features/onboarding/domain/repositories/onboarding_repository.dart';
 import 'package:vezu/features/onboarding/domain/usecases/complete_onboarding.dart';
 import 'package:vezu/features/onboarding/domain/usecases/is_onboarding_completed.dart';
+import 'package:vezu/features/weather/data/datasources/weather_remote_data_source.dart';
+import 'package:vezu/features/weather/data/repositories/weather_repository_impl.dart';
+import 'package:vezu/features/weather/domain/repositories/weather_repository.dart';
+import 'package:vezu/features/weather/domain/usecases/get_weather.dart';
 import 'firebase_options.dart';
+import 'package:vezu/core/services/location_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -72,6 +79,18 @@ Future<void> main() async {
       IsOnboardingCompletedUseCase(onboardingRepository);
   final completeOnboardingUseCase =
       CompleteOnboardingUseCase(onboardingRepository);
+  final dio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ),
+  );
+  final WeatherRemoteDataSource weatherRemoteDataSource =
+      WeatherRemoteDataSourceImpl(dio);
+  final WeatherRepository weatherRepository =
+      WeatherRepositoryImpl(remoteDataSource: weatherRemoteDataSource);
+  final getWeatherUseCase = GetWeatherUseCase(weatherRepository);
+  final BaseLocationService locationService = LocationService();
 
   runApp(
     EasyLocalization(
@@ -103,6 +122,15 @@ Future<void> main() async {
           ),
           RepositoryProvider<CompleteOnboardingUseCase>.value(
             value: completeOnboardingUseCase,
+          ),
+          RepositoryProvider<WeatherRepository>.value(
+            value: weatherRepository,
+          ),
+          RepositoryProvider<GetWeatherUseCase>.value(
+            value: getWeatherUseCase,
+          ),
+          RepositoryProvider<BaseLocationService>.value(
+            value: locationService,
           ),
         ],
         child: BlocProvider(
