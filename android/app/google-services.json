@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "439217544713-3oare18vb75v05vd0vit2gs3oc7g5e6t.apps.googleusercontent.com",
+          "client_id": "439217544713-i8kad2dt4mk45ogv29l1rbl7mdb1klih.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.appistry.vezu",
-            "certificate_hash": "6f9975877fac332b86406d1e44b568c184604b6d"
+            "certificate_hash": "5b525eab0bb9870c34d57c4f021a4142240f4c1f"
           }
         },
         {
