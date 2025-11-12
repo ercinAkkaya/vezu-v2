@@ -1,0 +1,157 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vezu/core/navigation/app_router.dart';
+import 'package:vezu/core/theme/app_theme.dart';
+import 'package:vezu/core/utils/app_constants.dart';
+import 'package:vezu/features/auth/data/datasources/auth_local_data_source.dart';
+import 'package:vezu/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:vezu/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:vezu/features/auth/domain/repositories/auth_repository.dart';
+import 'package:vezu/features/auth/domain/usecases/get_cached_user_id.dart';
+import 'package:vezu/features/auth/domain/usecases/get_current_user.dart';
+import 'package:vezu/features/auth/domain/usecases/sign_in_with_google.dart';
+import 'package:vezu/features/auth/domain/usecases/sign_out.dart';
+import 'package:vezu/features/auth/domain/usecases/update_user_profile.dart';
+import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:vezu/features/onboarding/data/datasources/onboarding_local_data_source.dart';
+import 'package:vezu/features/onboarding/data/repositories/onboarding_repository_impl.dart';
+import 'package:vezu/features/onboarding/domain/repositories/onboarding_repository.dart';
+import 'package:vezu/features/onboarding/domain/usecases/complete_onboarding.dart';
+import 'package:vezu/features/onboarding/domain/usecases/is_onboarding_completed.dart';
+import 'firebase_options.dart';
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  if (!kIsWeb) {
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    await _initializePushNotifications();
+  }
+  await EasyLocalization.ensureInitialized();
+  final sharedPreferences = await SharedPreferences.getInstance();
+
+  final AuthRepository authRepository = AuthRepositoryImpl(
+    remoteDataSource: AuthRemoteDataSourceImpl(
+      firebaseAuth: FirebaseAuth.instance,
+      googleSignIn: GoogleSignIn(),
+      firestore: FirebaseFirestore.instance,
+      storage: FirebaseStorage.instance,
+    ),
+    localDataSource: AuthLocalDataSourceImpl(sharedPreferences),
+    messaging: FirebaseMessaging.instance,
+  );
+
+  final OnboardingRepository onboardingRepository = OnboardingRepositoryImpl(
+    OnboardingLocalDataSourceImpl(sharedPreferences),
+  );
+
+  final signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepository);
+  final getCurrentUserUseCase = GetCurrentUserUseCase(authRepository);
+  final getCachedUserIdUseCase = GetCachedUserIdUseCase(authRepository);
+  final signOutUseCase = SignOutUseCase(authRepository);
+  final updateUserProfileUseCase = UpdateUserProfileUseCase(authRepository);
+  final isOnboardingCompletedUseCase =
+      IsOnboardingCompletedUseCase(onboardingRepository);
+  final completeOnboardingUseCase =
+      CompleteOnboardingUseCase(onboardingRepository);
+
+  runApp(
+    EasyLocalization(
+      supportedLocales: AppConstants.supportedLocales,
+      path: AppConstants.translationsPath,
+      fallbackLocale: AppConstants.defaultLocale,
+      startLocale: AppConstants.defaultLocale,
+      child: MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<AuthRepository>.value(value: authRepository),
+          RepositoryProvider<OnboardingRepository>.value(
+            value: onboardingRepository,
+          ),
+          RepositoryProvider<SignInWithGoogleUseCase>.value(
+            value: signInWithGoogleUseCase,
+          ),
+          RepositoryProvider<GetCurrentUserUseCase>.value(
+            value: getCurrentUserUseCase,
+          ),
+          RepositoryProvider<GetCachedUserIdUseCase>.value(
+            value: getCachedUserIdUseCase,
+          ),
+          RepositoryProvider<SignOutUseCase>.value(value: signOutUseCase),
+          RepositoryProvider<UpdateUserProfileUseCase>.value(
+            value: updateUserProfileUseCase,
+          ),
+          RepositoryProvider<IsOnboardingCompletedUseCase>.value(
+            value: isOnboardingCompletedUseCase,
+          ),
+          RepositoryProvider<CompleteOnboardingUseCase>.value(
+            value: completeOnboardingUseCase,
+          ),
+        ],
+        child: BlocProvider(
+          create: (context) => AuthCubit(
+            signInWithGoogleUseCase: signInWithGoogleUseCase,
+            getCurrentUserUseCase: getCurrentUserUseCase,
+            getCachedUserIdUseCase: getCachedUserIdUseCase,
+            signOutUseCase: signOutUseCase,
+            updateUserProfileUseCase: updateUserProfileUseCase,
+          )..checkAuthStatus(),
+          child: const AIOutfitCombinerApp(),
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> _initializePushNotifications() async {
+  if (kIsWeb) {
+    return;
+  }
+  final messaging = FirebaseMessaging.instance;
+  await messaging.setAutoInitEnabled(true);
+  await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+}
+
+class AIOutfitCombinerApp extends StatelessWidget {
+  const AIOutfitCombinerApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: AppConstants.appName,
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light(),
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      onGenerateTitle: (context) => 'appTitle'.tr(),
+      initialRoute: AppRoutes.splash,
+      onGenerateRoute: AppRouter.onGenerateRoute,
+    );
+  }
+}
