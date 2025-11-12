@@ -10,6 +10,8 @@ class WeatherSummaryCard extends StatelessWidget {
     required this.humidity,
     required this.wind,
     required this.icon,
+    this.location,
+    this.isLoading = false,
   });
 
   final String temperature;
@@ -17,6 +19,8 @@ class WeatherSummaryCard extends StatelessWidget {
   final String humidity;
   final String wind;
   final IconData icon;
+  final String? location;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +51,26 @@ class WeatherSummaryCard extends StatelessWidget {
                       color: theme.colorScheme.onSecondary,
                     ),
                   ),
+                  if (location != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 16,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          location!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Text(
                     temperature,
@@ -69,7 +93,18 @@ class WeatherSummaryCard extends StatelessWidget {
                   color: theme.colorScheme.surface.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Icon(icon, size: 28, color: theme.colorScheme.primary),
+                child: isLoading
+                    ? SizedBox(
+                        width: 26,
+                        height: 26,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            theme.colorScheme.primary,
+                          ),
+                        ),
+                      )
+                    : Icon(icon, size: 28, color: theme.colorScheme.primary),
               ),
             ],
           ),

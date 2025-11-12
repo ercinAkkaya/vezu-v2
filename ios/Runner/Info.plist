@@ -52,6 +52,8 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Hava durumunu gösterebilmek ve kombin önerilerini kişiselleştirebilmek için konumunuza ihtiyaç duyuyoruz.</string>
 	<!-- Google Sign-In -->
 	<key>CFBundleURLTypes</key>
 	<array>

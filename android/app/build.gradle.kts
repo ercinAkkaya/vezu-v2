@@ -42,15 +42,6 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
-        debug {
-            signingConfig = signingConfigs.getByName("debug")
-        }
-        release {
-            signingConfig = signingConfigs.getByName("release")
-        }
-    }
-
     signingConfigs {
         getByName("debug") {
             keyAlias = (keystoreProperties["keyAlias"] as String?) ?: "flutter_key"
@@ -65,6 +56,15 @@ android {
             storeFile = (keystoreProperties["storeFile"] as String?)?.let { file(it) }
                 ?: file("/Users/ercinakkaya/Desktop/code/school/flutter_keystore.jks")
             storePassword = (keystoreProperties["storePassword"] as String?) ?: "Ercin!1283."
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+        release {
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
