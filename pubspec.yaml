@@ -52,6 +52,15 @@ dependencies:
   shared_preferences: ^2.3.2
   geolocator: ^10.1.0
   flutter_svg: ^2.0.10+1
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/png/vezu_foreground.png"   # Ön plan (V harfi, askı)
+  adaptive_icon_background: "assets/png/vezu_background.png"  # Arka plan (gradient, doku)
+
+
 
 dev_dependencies:
   flutter_test:

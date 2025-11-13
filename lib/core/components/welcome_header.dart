@@ -16,30 +16,60 @@ class WelcomeHeader extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
-          backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-          child: avatarUrl == null
-              ? Icon(Icons.person, color: theme.colorScheme.primary)
-              : null,
+        Container(
+          width: 62,
+          height: 62,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                theme.colorScheme.primary.withOpacity(0.92),
+                theme.colorScheme.primaryContainer.withOpacity(0.78),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.primary.withOpacity(0.22),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: avatarUrl != null
+                ? Image.network(
+                    avatarUrl!,
+                    fit: BoxFit.cover,
+                  )
+                : Center(
+                    child: Icon(
+                      Icons.person,
+                      color: theme.colorScheme.onPrimary,
+                      size: 30,
+                    ),
+                  ),
+          ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 20),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'homeWelcomeBack'.tr(),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSecondary,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: theme.colorScheme.onSecondary.withOpacity(0.8),
+                  letterSpacing: 0.4,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 userName,
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
                 ),
               ),
             ],

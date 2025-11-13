@@ -46,35 +46,32 @@ class _MainShellView extends StatelessWidget {
           ),
         ];
 
+        const backgroundColor = Color(0xFF0F0F0F);
+        const selectedColor = Colors.white;
+        const unselectedColor = Color(0x99FFFFFF);
+
         return Scaffold(
           body: IndexedStack(index: index, children: _pages),
           bottomNavigationBar: SafeArea(
             minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    theme.colorScheme.surfaceVariant.withOpacity(0.96),
-                    theme.colorScheme.surface.withOpacity(0.94),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: backgroundColor,
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(
-                  color: theme.colorScheme.onSurface.withOpacity(0.06),
-                  width: 1,
+                  color: Colors.white.withOpacity(0.04),
+                  width: 0.6,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 24,
+                    color: Colors.black.withOpacity(0.35),
+                    blurRadius: 32,
                     offset: const Offset(0, 18),
                   ),
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.05),
-                    blurRadius: 32,
-                    offset: const Offset(0, 8),
+                    color: Colors.white.withOpacity(0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -84,19 +81,21 @@ class _MainShellView extends StatelessWidget {
                   data: NavigationBarThemeData(
                     backgroundColor: Colors.transparent,
                     surfaceTintColor: Colors.transparent,
-                    indicatorColor: theme.colorScheme.primary.withOpacity(0.12),
-                    labelTextStyle: MaterialStatePropertyAll(
-                      theme.textTheme.labelMedium?.copyWith(
+                    indicatorColor: Colors.white.withOpacity(0.14),
+                    labelTextStyle: MaterialStateProperty.resolveWith((states) {
+                      final baseStyle = theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                      );
+                      if (states.contains(MaterialState.selected)) {
+                        return baseStyle?.copyWith(color: selectedColor);
+                      }
+                      return baseStyle?.copyWith(color: unselectedColor);
+                    }),
                     iconTheme: MaterialStateProperty.resolveWith((states) {
                       if (states.contains(MaterialState.selected)) {
-                        return IconThemeData(color: theme.colorScheme.primary);
+                        return const IconThemeData(color: selectedColor);
                       }
-                      return IconThemeData(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      );
+                      return const IconThemeData(color: unselectedColor);
                     }),
                   ),
                   child: NavigationBar(

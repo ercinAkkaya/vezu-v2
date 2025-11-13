@@ -4,52 +4,106 @@ class WardrobeState extends Equatable {
   const WardrobeState({
     this.isProcessing = false,
     this.isAnalyzing = false,
+    this.isLoadingWardrobe = false,
     this.selectedImagePath,
     this.shouldShowPreview = false,
     this.permissionDenied = false,
     this.snackbarMessageKey,
-    this.wardrobeItems = const [],
+    this.analysisErrorKey,
+    this.selectedCategoryKey,
+    this.selectedTypeKey,
+    this.lastAddedItem,
+    this.activeFilterKey,
+    this.searchQuery = '',
+    this.wardrobeItems = const <ClothingItem>[],
+    this.visibleItems = const <ClothingItem>[],
   });
 
   final bool isProcessing;
   final bool isAnalyzing;
+  final bool isLoadingWardrobe;
   final String? selectedImagePath;
   final bool shouldShowPreview;
   final bool permissionDenied;
   final String? snackbarMessageKey;
-  final List<String> wardrobeItems;
+  final String? analysisErrorKey;
+  final String? selectedCategoryKey;
+  final String? selectedTypeKey;
+  final ClothingItem? lastAddedItem;
+  final String? activeFilterKey;
+  final String searchQuery;
+  final List<ClothingItem> wardrobeItems;
+  final List<ClothingItem> visibleItems;
 
   WardrobeState copyWith({
     bool? isProcessing,
     bool? isAnalyzing,
+    bool? isLoadingWardrobe,
     String? selectedImagePath,
+    bool clearSelectedImage = false,
     bool? shouldShowPreview,
     bool? permissionDenied,
     String? snackbarMessageKey,
     bool resetSnackbar = false,
-    List<String>? wardrobeItems,
+    String? analysisErrorKey,
+    bool resetAnalysisError = false,
+    String? selectedCategoryKey,
+    bool clearSelectedCategory = false,
+    String? selectedTypeKey,
+    bool clearSelectedType = false,
+    ClothingItem? lastAddedItem,
+    bool resetLastAdded = false,
+    String? activeFilterKey,
+    bool clearActiveFilter = false,
+    String? searchQuery,
+    List<ClothingItem>? wardrobeItems,
+    List<ClothingItem>? visibleItems,
   }) {
     return WardrobeState(
       isProcessing: isProcessing ?? this.isProcessing,
       isAnalyzing: isAnalyzing ?? this.isAnalyzing,
-      selectedImagePath: selectedImagePath ?? this.selectedImagePath,
+      isLoadingWardrobe: isLoadingWardrobe ?? this.isLoadingWardrobe,
+      selectedImagePath: clearSelectedImage
+          ? null
+          : selectedImagePath ?? this.selectedImagePath,
       shouldShowPreview: shouldShowPreview ?? this.shouldShowPreview,
       permissionDenied: permissionDenied ?? this.permissionDenied,
-      snackbarMessageKey: resetSnackbar
+      snackbarMessageKey:
+          resetSnackbar ? null : snackbarMessageKey ?? this.snackbarMessageKey,
+      analysisErrorKey: resetAnalysisError
           ? null
-          : snackbarMessageKey ?? this.snackbarMessageKey,
+          : analysisErrorKey ?? this.analysisErrorKey,
+      selectedCategoryKey: clearSelectedCategory
+          ? null
+          : selectedCategoryKey ?? this.selectedCategoryKey,
+      selectedTypeKey:
+          clearSelectedType ? null : selectedTypeKey ?? this.selectedTypeKey,
+      lastAddedItem:
+          resetLastAdded ? null : lastAddedItem ?? this.lastAddedItem,
+      activeFilterKey:
+          clearActiveFilter ? null : activeFilterKey ?? this.activeFilterKey,
+      searchQuery: searchQuery ?? this.searchQuery,
       wardrobeItems: wardrobeItems ?? this.wardrobeItems,
+      visibleItems: visibleItems ?? this.visibleItems,
     );
   }
 
   @override
   List<Object?> get props => [
-    isProcessing,
-    isAnalyzing,
-    selectedImagePath,
-    shouldShowPreview,
-    permissionDenied,
-    snackbarMessageKey,
-    wardrobeItems,
+        isProcessing,
+        isAnalyzing,
+    isLoadingWardrobe,
+        selectedImagePath,
+        shouldShowPreview,
+        permissionDenied,
+        snackbarMessageKey,
+        analysisErrorKey,
+        selectedCategoryKey,
+        selectedTypeKey,
+        lastAddedItem,
+    activeFilterKey,
+    searchQuery,
+        wardrobeItems,
+    visibleItems,
   ];
 }
