@@ -12,6 +12,7 @@ class WardrobeItemGrid extends StatelessWidget {
     required this.activeFilterKey,
     required this.isProcessing,
     required this.onAddPressed,
+    required this.onDeletePressed,
   });
 
   final List<ClothingItem> visibleItems;
@@ -20,6 +21,7 @@ class WardrobeItemGrid extends StatelessWidget {
   final String? activeFilterKey;
   final bool isProcessing;
   final VoidCallback onAddPressed;
+  final void Function(ClothingItem) onDeletePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +55,10 @@ class WardrobeItemGrid extends StatelessWidget {
       itemCount: visibleItems.length,
       itemBuilder: (context, index) {
         final item = visibleItems[index];
-        return WardrobeItemCard(item: item);
+        return WardrobeItemCard(
+          item: item,
+          onDelete: () => onDeletePressed(item),
+        );
       },
     );
   }

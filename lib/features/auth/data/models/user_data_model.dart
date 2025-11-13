@@ -12,6 +12,7 @@ class UserDataModel extends UserEntity {
     super.age,
     super.totalOutfitsCreated,
     super.subscriptionPlan,
+    super.totalClothes,
     super.profilePhotoUrl,
     super.lastLoginDate,
     super.deviceToken,
@@ -47,6 +48,7 @@ class UserDataModel extends UserEntity {
       gender: data['gender'] as String?,
       age: (data['age'] as num?)?.toInt(),
       totalOutfitsCreated: (data['totalOutfitsCreated'] as num?)?.toInt(),
+      totalClothes: (data['totalClothes'] as num?)?.toInt(),
       subscriptionPlan: data['subscriptionPlan'] as String?,
       profilePhotoUrl: data['profilePhotoUrl'] as String?,
       lastLoginDate: dateFromTimestamp(data['lastLoginDate']),
@@ -80,8 +82,12 @@ class UserDataModel extends UserEntity {
 
     if (isNewUser) {
       map['registrationDate'] = FieldValue.serverTimestamp();
+      map['totalClothes'] = 0;
     } else {
       map['registrationDate'] = timestampFromDate(registrationDate);
+      if (totalClothes != null) {
+        map['totalClothes'] = totalClothes;
+      }
     }
 
     map.removeWhere((key, value) => value == null);
@@ -89,6 +95,7 @@ class UserDataModel extends UserEntity {
     return map;
   }
 
+  @override
   @override
   UserDataModel copyWith({
     String? id,
@@ -99,6 +106,7 @@ class UserDataModel extends UserEntity {
     String? gender,
     int? age,
     int? totalOutfitsCreated,
+    int? totalClothes,
     String? subscriptionPlan,
     String? profilePhotoUrl,
     DateTime? lastLoginDate,
@@ -116,6 +124,7 @@ class UserDataModel extends UserEntity {
       gender: gender ?? this.gender,
       age: age ?? this.age,
       totalOutfitsCreated: totalOutfitsCreated ?? this.totalOutfitsCreated,
+      totalClothes: totalClothes ?? this.totalClothes,
       subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,
       profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       lastLoginDate: lastLoginDate ?? this.lastLoginDate,

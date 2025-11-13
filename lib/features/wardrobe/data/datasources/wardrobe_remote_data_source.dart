@@ -14,6 +14,11 @@ abstract class WardrobeRemoteDataSource {
     required String type,
   });
   Stream<List<ClothingItemModel>> watchWardrobeItems(String uid);
+  Future<void> deleteClothingItem({
+    required String uid,
+    required String itemId,
+    required String imageUrl,
+  });
 }
 
 class WardrobeRemoteDataSourceImpl implements WardrobeRemoteDataSource {
@@ -67,6 +72,15 @@ class WardrobeRemoteDataSourceImpl implements WardrobeRemoteDataSource {
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
+    await _firestore.collection('users').doc(uid).update({
+      'totalClothes': FieldValue.increment(1),
+    }).catchError((_) async {
+      await _firestore.collection('users').doc(uid).set(
+        {'totalClothes': FieldValue.increment(1)},
+        SetOptions(merge: true),
+      );
+    });
+
     sanitizedMetadata.remove('imageUrl');
 
     return WardrobeRemoteResult(
@@ -89,6 +103,29 @@ class WardrobeRemoteDataSourceImpl implements WardrobeRemoteDataSource {
               .map(ClothingItemModel.fromDocument)
               .toList(growable: false),
         );
+  }
+
+  @override
+  Future<void> deleteClothingItem({
+    required String uid,
+    required String itemId,
+    required String imageUrl,
+  }) async {
+    await _storageService.deleteFile(imageUrl);
+    await _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('clothes_metadata')
+        .doc(itemId)
+        .delete();
+    await _firestore.collection('users').doc(uid).update({
+      'totalClothes': FieldValue.increment(-1),
+    }).catchError((_) async {
+      await _firestore.collection('users').doc(uid).set(
+        {'totalClothes': FieldValue.increment(-1)},
+        SetOptions(merge: true),
+      );
+    });
   }
 }
 

@@ -84,5 +84,30 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       );
     }
   }
+
+  @override
+  Future<void> deleteClothingItem({
+    required String uid,
+    required String itemId,
+    required String imageUrl,
+  }) async {
+    try {
+      await _remoteDataSource.deleteClothingItem(
+        uid: uid,
+        itemId: itemId,
+        imageUrl: imageUrl,
+      );
+    } on FirebaseException catch (error, stackTrace) {
+      Error.throwWithStackTrace(
+        WardrobeFailure(error.message ?? 'Firebase error.'),
+        stackTrace,
+      );
+    } on Exception catch (error, stackTrace) {
+      Error.throwWithStackTrace(
+        WardrobeFailure(error.toString()),
+        stackTrace,
+      );
+    }
+  }
 }
 

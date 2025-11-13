@@ -10,5 +10,10 @@ abstract class WardrobeRepository {
     required String type,
   });
   Stream<List<ClothingItem>> watchWardrobeItems({required String uid});
+  Future<void> deleteClothingItem({
+    required String uid,
+    required String itemId,
+    required String imageUrl,
+  });
 }
 

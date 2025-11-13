@@ -5,9 +5,11 @@ import "package:bloc/bloc.dart";
 import "package:equatable/equatable.dart";
 import "package:vezu/core/base/base_image_picker_service.dart";
 import "package:vezu/core/base/base_permission_service.dart";
+import "package:vezu/features/auth/presentation/cubit/auth_cubit.dart";
 import "package:vezu/features/wardrobe/domain/entities/clothing_item.dart";
 import "package:vezu/features/wardrobe/domain/errors/wardrobe_failure.dart";
 import "package:vezu/features/wardrobe/domain/usecases/add_clothing_item.dart";
+import "package:vezu/features/wardrobe/domain/usecases/delete_clothing_item.dart";
 import "package:vezu/features/wardrobe/domain/usecases/watch_wardrobe_items.dart";
 
 part "wardrobe_state.dart";
@@ -18,19 +20,64 @@ class WardrobeCubit extends Cubit<WardrobeState> {
     required BasePermissionService permissionService,
     required AddClothingItemUseCase addClothingItemUseCase,
     required WatchWardrobeItemsUseCase watchWardrobeItemsUseCase,
+    required AuthCubit authCubit,
+    required DeleteClothingItemUseCase deleteClothingItemUseCase,
   })  : _imagePickerService = imagePickerService,
         _permissionService = permissionService,
         _addClothingItemUseCase = addClothingItemUseCase,
         _watchWardrobeItemsUseCase = watchWardrobeItemsUseCase,
+        _deleteClothingItemUseCase = deleteClothingItemUseCase,
+        _authCubit = authCubit,
         super(const WardrobeState());
 
   final BaseImagePickerService _imagePickerService;
   final BasePermissionService _permissionService;
   final AddClothingItemUseCase _addClothingItemUseCase;
   final WatchWardrobeItemsUseCase _watchWardrobeItemsUseCase;
+  final DeleteClothingItemUseCase _deleteClothingItemUseCase;
+  final AuthCubit _authCubit;
 
   StreamSubscription<List<ClothingItem>>? _wardrobeSubscription;
   String? _currentUserId;
+
+  Future<void> deleteItem(ClothingItem item) async {
+    final uid = _currentUserId;
+    if (uid == null) {
+      return;
+    }
+    try {
+      await _deleteClothingItemUseCase(
+        DeleteClothingItemParams(
+          uid: uid,
+          itemId: item.id,
+          imageUrl: item.imageUrl,
+        ),
+      );
+      _authCubit.decrementTotalClothes();
+      final updatedItems = List<ClothingItem>.from(state.wardrobeItems)
+        ..removeWhere((element) => element.id == item.id);
+      final updatedVisible = List<ClothingItem>.from(state.visibleItems)
+        ..removeWhere((element) => element.id == item.id);
+      emit(
+        state.copyWith(
+          wardrobeItems: updatedItems,
+          visibleItems: updatedVisible,
+        ),
+      );
+    } on WardrobeFailure catch (error) {
+      emit(
+        state.copyWith(
+          snackbarMessageKey: error.message,
+        ),
+      );
+    } on Exception catch (error) {
+      emit(
+        state.copyWith(
+          snackbarMessageKey: error.toString(),
+        ),
+      );
+    }
+  }
 
   void initialize(String? uid) {
     if (uid == null || uid.isEmpty) {
@@ -223,9 +270,6 @@ class WardrobeCubit extends Cubit<WardrobeState> {
         ),
       );
 
-      final updatedItems = List<ClothingItem>.from(state.wardrobeItems)
-        ..insert(0, result);
-
       emit(
         state.copyWith(
           isAnalyzing: false,
@@ -235,14 +279,9 @@ class WardrobeCubit extends Cubit<WardrobeState> {
           lastAddedItem: result,
           clearSelectedCategory: true,
           clearSelectedType: true,
-          wardrobeItems: updatedItems,
-          visibleItems: _applyFilters(
-            items: updatedItems,
-            categoryKey: state.activeFilterKey,
-            searchQuery: state.searchQuery,
-          ),
         ),
       );
+      _authCubit.incrementTotalClothes();
     } on WardrobeFailure {
       emit(
         state.copyWith(

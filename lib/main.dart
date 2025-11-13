@@ -41,6 +41,7 @@ import 'package:vezu/features/wardrobe/data/datasources/wardrobe_remote_data_sou
 import 'package:vezu/features/wardrobe/data/repositories/wardrobe_repository_impl.dart';
 import 'package:vezu/features/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:vezu/features/wardrobe/domain/usecases/add_clothing_item.dart';
+import 'package:vezu/features/wardrobe/domain/usecases/delete_clothing_item.dart';
 import 'package:vezu/features/wardrobe/domain/usecases/watch_wardrobe_items.dart';
 import 'firebase_options.dart';
 import 'package:vezu/core/services/location_service.dart';
@@ -114,6 +115,8 @@ Future<void> main() async {
   final addClothingItemUseCase = AddClothingItemUseCase(wardrobeRepository);
   final watchWardrobeItemsUseCase =
       WatchWardrobeItemsUseCase(wardrobeRepository);
+  final deleteClothingItemUseCase =
+      DeleteClothingItemUseCase(wardrobeRepository);
 
   runApp(
     EasyLocalization(
@@ -163,6 +166,9 @@ Future<void> main() async {
           ),
           RepositoryProvider<WatchWardrobeItemsUseCase>.value(
             value: watchWardrobeItemsUseCase,
+          ),
+          RepositoryProvider<DeleteClothingItemUseCase>.value(
+            value: deleteClothingItemUseCase,
           ),
         ],
         child: BlocProvider(

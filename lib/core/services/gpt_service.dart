@@ -29,6 +29,45 @@ class GptService implements BaseGptService {
       '[GptService] Using GPT API key with length ${apiKey.length}.',
     );
 
+    final prompt = '''
+You are a vision model and MUST analyze the clothing item in the provided image strictly following these rules.
+
+Input parameters:
+- Image URL: $imageUrl (treat as public, do NOT refuse to access)
+- category: $category  // do not change this value
+- type: $type          // do not change this value
+
+Output requirements:
+- Respond with a single JSON object. Do not include explanations or markdown fences.
+- The JSON object MUST contain exactly these keys (all lowercase, snake_case):
+  {
+    "category": "",                // string, use provided category value
+    "type": "",                    // string, use provided type value
+    "gender_fit": "",              // string: one of ["male", "female", "unisex", "kids", "baby"] or "unknown"
+    "color_palette": [],           // array of 1-3 strings with basic color names (e.g., ["navy", "white"]); use lowercase
+    "color_tone": "",              // string: one of ["warm", "cool", "neutral"]
+    "fabric": "",                  // string: e.g., "cotton", "denim", "wool", or "unknown"
+    "pattern": "",                 // string: e.g., "solid", "striped", "plaid", "print", "graphic", "patterned", "unknown"
+    "style": "",                   // string: e.g., "casual", "formal", "sporty", "business", "streetwear", "evening", "unknown"
+    "season": "",                  // string: one of ["spring", "summer", "fall", "winter", "all_season"]
+    "usage": [],                   // array of 1-3 strings describing occasions (e.g., ["daily wear", "office"]); use lowercase
+    "cut": "",                     // string describing cut, e.g., "slim", "relaxed", "tapered", "fit-and-flare", "unknown"
+    "length": "",                  // string describing length (e.g., "full", "mid", "mini", "knee", "ankle", "cropped", "unknown")
+    "layer": "",                   // string: one of ["base", "mid", "outer"]
+    "age_group": "",               // string: one of ["adult", "teen", "child", "toddler", "baby", "unknown"]
+    "details": []                  // array of strings for notable details (e.g., ["cargo pockets", "pleats"]); 0-5 items
+  }
+
+Behavior rules:
+1. Category and type MUST exactly match the provided values.
+2. If uncertain about any field, fill with a sensible default ("unknown" or [] as appropriate) rather than omitting it.
+3. NEVER mention inability to access the image; assume it is accessible.
+4. Do NOT output markdown fences like ```json.
+5. Ensure the output is valid JSON (keys in double quotes, strings in double quotes, no trailing commas).
+
+Return ONLY the JSON object.
+''';
+
     final payload = {
       'model': _model,
       'input': [
@@ -37,10 +76,7 @@ class GptService implements BaseGptService {
           'content': [
             {
               'type': 'input_text',
-              'text':
-                  'Analyze the clothing item using this image URL: $imageUrl. '
-                      'User selected category: $category, type: $type. '
-                      'Fill the remaining JSON fields logically.'
+              'text': prompt,
             },
             {
               'type': 'input_image',

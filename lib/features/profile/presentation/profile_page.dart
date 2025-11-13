@@ -133,6 +133,7 @@ class ProfilePage extends StatelessWidget {
               final email = user?.email ?? 'profileSampleEmail'.tr();
               final avatarUrl = user?.profilePhotoUrl;
               final outfitsCount = (user?.totalOutfitsCreated ?? 0).toString();
+              final totalClothes = (user?.totalClothes ?? 0).toString();
               final subscriptionPlan = _subscriptionPlanFromString(user?.subscriptionPlan);
               final isAuthLoading = authState.status == AuthStatus.loading;
 
@@ -260,7 +261,7 @@ class ProfilePage extends StatelessWidget {
                                     onTap: () =>
                                         context.read<BottomNavCubit>().setIndex(1),
                                     child: InfoStatCard(
-                                      value: '0',
+                                  value: totalClothes,
                                       label: 'profileStatItems'.tr(),
                                       icon: Icons.inventory_2_outlined,
                                     ),

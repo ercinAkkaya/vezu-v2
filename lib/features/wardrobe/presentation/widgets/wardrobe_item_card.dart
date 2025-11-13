@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:vezu/features/wardrobe/domain/entities/clothing_item.dart';
 
 class WardrobeItemCard extends StatelessWidget {
-  const WardrobeItemCard({super.key, required this.item});
+  const WardrobeItemCard({
+    super.key,
+    required this.item,
+    this.onDelete,
+  });
 
   final ClothingItem item;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -24,190 +29,191 @@ class WardrobeItemCard extends StatelessWidget {
       ...metadata.details,
     ].where((value) => value.isNotEmpty).toList();
 
+    const maxVisibleChips = 3;
+    final visibleChips = infoChips.take(maxVisibleChips).toList();
+    final overflowCount = infoChips.length - visibleChips.length;
+
+    final isCompact = visibleChips.isEmpty && subtitleParts.isEmpty;
+
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.surface.withOpacity(0.95),
-            theme.colorScheme.surfaceVariant.withOpacity(0.9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        borderRadius: BorderRadius.circular(22),
+        color: theme.colorScheme.surface,
         border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.08),
-          width: 0.7,
+          color: theme.colorScheme.outline.withOpacity(0.06),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 26,
-            offset: const Offset(0, 16),
-          ),
-          BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.08),
-            blurRadius: 32,
-            offset: const Offset(0, 12),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                gradient: LinearGradient(
-                  colors: [
-                    theme.colorScheme.primary.withOpacity(0.06),
-                    Colors.transparent,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(28),
-                    topRight: Radius.circular(28),
-                  ),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.network(
-                        item.imageUrl,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          }
-                          return Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(
-                                theme.colorScheme.primary,
-                              ),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) => Center(
-                          child: Icon(
-                            Icons.broken_image_outlined,
-                            color: theme.colorScheme.outline,
-                          ),
+          Expanded(
+            flex: isCompact ? 10 : 7,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(
+                  item.imageUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) {
+                      return child;
+                    }
+                    return Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(
+                          theme.colorScheme.primary,
                         ),
                       ),
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.black.withOpacity(0.05),
-                                Colors.black.withOpacity(0.45),
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 14,
-                        left: 14,
-                        child: _Badge(
-                          text: item.category.replaceAll('_', ' '),
-                          color: theme.colorScheme.primary.withOpacity(0.85),
-                          foreground: theme.colorScheme.onPrimary,
-                        ),
-                      ),
-                      if ((metadata.genderFit).isNotEmpty)
-                        Positioned(
-                          top: 14,
-                          right: 14,
-                          child: _Badge(
-                            text: metadata.genderFit,
-                            color: theme.colorScheme.surface.withOpacity(0.7),
-                            foreground: theme.colorScheme.onSurface,
-                          ),
-                        ),
-                    ],
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      color: theme.colorScheme.outline,
+                      size: 32,
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withOpacity(0.0),
+                          Colors.black.withOpacity(0.38),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 14,
+                  left: 14,
+                  child: _Badge(
+                    text: item.category.replaceAll('_', ' '),
+                    color: theme.colorScheme.primary.withOpacity(0.85),
+                    foreground: theme.colorScheme.onPrimary,
+                  ),
+                ),
+                if (metadata.genderFit.isNotEmpty)
+                  Positioned(
+                    top: 14,
+                    right: 14,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Expanded(
-                          child: Text(
-                            item.type.replaceAll('_', ' '),
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
+                        _Badge(
+                          text: metadata.genderFit,
+                          color: theme.colorScheme.surface.withOpacity(0.75),
+                          foreground: theme.colorScheme.onSurface,
                         ),
-                        if (metadata.season.isNotEmpty)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.calendar_month,
-                                size: 16,
-                                color: theme.colorScheme.primary,
+                        if (onDelete != null) ...[
+                          const SizedBox(height: 8),
+                          _ActionButton(
+                            icon: Icons.delete_outline_rounded,
+                            onPressed: onDelete!,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                if (metadata.genderFit.isEmpty && onDelete != null)
+                  Positioned(
+                    top: 14,
+                    right: 14,
+                    child: _ActionButton(
+                      icon: Icons.delete_outline_rounded,
+                      onPressed: onDelete!,
+                    ),
+                  ),
+                if (!isCompact)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.55),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              item.type.replaceAll('_', ' '),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.2,
+                                color: Colors.white,
                               ),
-                              const SizedBox(width: 4),
+                            ),
+                            if (subtitleParts.isNotEmpty) ...[
+                              const SizedBox(height: 4),
                               Text(
-                                metadata.season,
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
+                                subtitleParts.join(' • '),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.white70,
                                 ),
                               ),
                             ],
-                          ),
-                      ],
-                    ),
-                    if (subtitleParts.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitleParts.join(' • '),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSecondary.withOpacity(0.85),
+                          ],
                         ),
                       ),
-                    ],
-                    if (infoChips.isNotEmpty) ...[
-                      const SizedBox(height: 14),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: infoChips
-                            .take(4)
-                            .map(
-                              (value) => _InfoChip(
-                                label: value,
-                                theme: theme,
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
+                    ),
+                  ),
+              ],
+            ),
           ),
+          if (!isCompact)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      ...visibleChips.map(
+                        (value) => _InfoChip(
+                          label: value,
+                          theme: theme,
+                        ),
+                      ),
+                      if (overflowCount > 0)
+                        _InfoChip(
+                          label: '+$overflowCount',
+                          theme: theme,
+                          isOverflow: true,
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -252,10 +258,15 @@ class _Badge extends StatelessWidget {
 }
 
 class _InfoChip extends StatelessWidget {
-  const _InfoChip({required this.label, required this.theme});
+  const _InfoChip({
+    required this.label,
+    required this.theme,
+    this.isOverflow = false,
+  });
 
   final String label;
   final ThemeData theme;
+  final bool isOverflow;
 
   @override
   Widget build(BuildContext context) {
@@ -263,9 +274,11 @@ class _InfoChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: theme.colorScheme.secondary.withOpacity(0.85),
+        color: isOverflow
+            ? theme.colorScheme.primary.withOpacity(0.12)
+            : theme.colorScheme.secondary.withOpacity(0.9),
         border: Border.all(
-          color: theme.colorScheme.onSecondary.withOpacity(0.08),
+          color: theme.colorScheme.onSecondary.withOpacity(isOverflow ? 0.1 : 0.18),
         ),
         boxShadow: [
           BoxShadow(
@@ -278,9 +291,45 @@ class _InfoChip extends StatelessWidget {
       child: Text(
         label,
         style: theme.textTheme.labelSmall?.copyWith(
-          color: theme.colorScheme.onSecondary,
+          color: isOverflow
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSecondary,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(18),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          padding: const EdgeInsets.all(8),
+          child: Icon(
+            icon,
+            size: 18,
+            color: Colors.white,
+          ),
         ),
       ),
     );

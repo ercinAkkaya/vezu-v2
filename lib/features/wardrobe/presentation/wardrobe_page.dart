@@ -6,12 +6,15 @@ import 'package:vezu/core/services/permission_service.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:vezu/features/wardrobe/domain/usecases/add_clothing_item.dart';
 import 'package:vezu/features/wardrobe/domain/usecases/watch_wardrobe_items.dart';
+import 'package:vezu/features/wardrobe/domain/entities/clothing_item.dart';
 import 'package:vezu/features/wardrobe/presentation/cubit/wardrobe_cubit.dart';
 import 'package:vezu/features/wardrobe/presentation/widgets/wardrobe_header.dart';
 import 'package:vezu/features/wardrobe/presentation/widgets/wardrobe_item_grid.dart';
 import 'package:vezu/features/wardrobe/presentation/widgets/wardrobe_preview_sheet.dart';
 import 'package:vezu/features/wardrobe/presentation/widgets/wardrobe_top_bar.dart';
 import 'package:vezu/features/wardrobe/presentation/widgets/wardrobe_upload_sheet.dart';
+
+import 'package:vezu/features/wardrobe/domain/usecases/delete_clothing_item.dart';
 
 class WardrobePage extends StatelessWidget {
   const WardrobePage({super.key});
@@ -24,6 +27,8 @@ class WardrobePage extends StatelessWidget {
         permissionService: PermissionService(),
         addClothingItemUseCase: context.read<AddClothingItemUseCase>(),
         watchWardrobeItemsUseCase: context.read<WatchWardrobeItemsUseCase>(),
+        authCubit: context.read<AuthCubit>(),
+        deleteClothingItemUseCase: context.read<DeleteClothingItemUseCase>(),
       ),
       child: const _WardrobeView(),
     );
@@ -114,6 +119,7 @@ class _WardrobeViewState extends State<_WardrobeView> {
                           activeFilterKey: state.activeFilterKey,
                           isProcessing: state.isProcessing,
                           onAddPressed: () => _showAddItemSheet(context),
+                          onDeletePressed: (item) => _confirmDelete(context, item),
                         ),
                       ),
                     ],
@@ -175,6 +181,34 @@ class _WardrobeViewState extends State<_WardrobeView> {
         },
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, ClothingItem item) async {
+    final theme = Theme.of(context);
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('wardrobeDeleteTitle'.tr()),
+        content: Text('wardrobeDeleteMessage'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('commonClose'.tr()),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: theme.colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('wardrobeDeleteConfirm'.tr()),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true && context.mounted) {
+      await context.read<WardrobeCubit>().deleteItem(item);
+    }
   }
 
   void _showPreviewSheet(BuildContext context) {
