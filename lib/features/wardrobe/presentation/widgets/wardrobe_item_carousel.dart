@@ -142,13 +142,13 @@ class _WardrobeItemCarouselState extends State<WardrobeItemCarousel> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 180,
+          height: 160,
           child: ListView.separated(
             controller: _scrollController,
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final item = _items[index];
               return _SpotlightItemCard(item: item);
@@ -171,31 +171,31 @@ class _SpotlightItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      width: 180,
+      width: 160,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           colors: [
-            Colors.black.withOpacity(0.03),
-            theme.colorScheme.surface.withOpacity(0.92),
+            Colors.black.withOpacity(0.02),
+            theme.colorScheme.surface.withOpacity(0.9),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.2),
-          width: 1,
+          color: theme.colorScheme.primary.withOpacity(0.12),
+          width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 18,
-            offset: const Offset(0, 12),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 10),
           ),
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.1),
-            blurRadius: 36,
-            offset: const Offset(0, 18),
+            color: theme.colorScheme.primary.withOpacity(0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
@@ -203,7 +203,7 @@ class _SpotlightItemCard extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(18),
             child: Image.network(
               item.imageUrl,
               fit: BoxFit.cover,
@@ -233,7 +233,7 @@ class _SpotlightItemCard extends StatelessWidget {
           ),
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(18),
               gradient: LinearGradient(
                 colors: [
                   Colors.black.withOpacity(0.05),
@@ -245,29 +245,29 @@ class _SpotlightItemCard extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: 12,
-            left: 12,
+            top: 10,
+            left: 10,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.85),
-                borderRadius: BorderRadius.circular(18),
+                color: Colors.white.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(
                     Icons.local_fire_department_rounded,
-                    size: 16,
+                    size: 14,
                     color: Colors.deepOrangeAccent,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 5),
                   Text(
                     "Spotlight",
                     style: theme.textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,
-                      letterSpacing: -0.1,
+                      letterSpacing: -0.05,
                     ),
                   ),
                 ],
@@ -275,9 +275,9 @@ class _SpotlightItemCard extends StatelessWidget {
             ),
           ),
           Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16,
+            left: 14,
+            right: 14,
+            bottom: 14,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -289,7 +289,8 @@ class _SpotlightItemCard extends StatelessWidget {
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
+                    fontSize: 14,
+                    letterSpacing: -0.15,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -299,6 +300,7 @@ class _SpotlightItemCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: Colors.white.withOpacity(0.75),
+                    fontSize: 12,
                   ),
                 ),
               ],

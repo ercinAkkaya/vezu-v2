@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:vezu/core/components/outlined_button.dart';
 import 'package:vezu/core/components/primary_filled_button.dart';
+import 'package:vezu/core/navigation/app_router.dart';
 
 class WardrobeTopBar extends StatelessWidget {
   const WardrobeTopBar({
@@ -39,7 +40,9 @@ class WardrobeTopBar extends StatelessWidget {
           children: [
             Expanded(
               child: PrimaryFilledButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).pushNamed(AppRoutes.combinationCreate);
+                },
                 label: 'createCombination'.tr(),
                 icon: const Icon(Icons.auto_fix_high_outlined),
               ),

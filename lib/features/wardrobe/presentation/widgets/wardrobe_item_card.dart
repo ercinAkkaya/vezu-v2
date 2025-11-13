@@ -33,166 +33,139 @@ class WardrobeItemCard extends StatelessWidget {
     final visibleChips = infoChips.take(maxVisibleChips).toList();
     final overflowCount = infoChips.length - visibleChips.length;
 
-    final isCompact = visibleChips.isEmpty && subtitleParts.isEmpty;
-
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.06),
+          color: theme.colorScheme.primary.withOpacity(0.08),
+          width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Expanded(
-            flex: isCompact ? 10 : 7,
-            child: Stack(
-              fit: StackFit.expand,
+          Positioned.fill(
+            child: Image.network(
+              item.imageUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) {
+                  return child;
+                }
+                return Container(
+                  color: theme.colorScheme.surface,
+                  alignment: Alignment.center,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(
+                      theme.colorScheme.primary,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: theme.colorScheme.surfaceVariant,
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.broken_image_outlined,
+                  color: theme.colorScheme.outline,
+                  size: 32,
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.05),
+                    Colors.black.withOpacity(0.6),
+                  ],
+                  stops: const [0.4, 1],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 14,
+            left: 14,
+            right: onDelete != null ? 60 : 14,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 6,
               children: [
-                Image.network(
-                  item.imageUrl,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) {
-                      return child;
-                    }
-                    return Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(
-                          theme.colorScheme.primary,
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) => Center(
-                    child: Icon(
-                      Icons.broken_image_outlined,
-                      color: theme.colorScheme.outline,
-                      size: 32,
-                    ),
-                  ),
-                ),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black.withOpacity(0.0),
-                          Colors.black.withOpacity(0.38),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 14,
-                  left: 14,
+                Align(
+                  alignment: Alignment.centerLeft,
                   child: _Badge(
                     text: item.category.replaceAll('_', ' '),
-                    color: theme.colorScheme.primary.withOpacity(0.85),
-                    foreground: theme.colorScheme.onPrimary,
+                    color: Colors.white.withOpacity(0.85),
+                    foreground: Colors.black87,
                   ),
                 ),
-                if (metadata.genderFit.isNotEmpty)
-                  Positioned(
-                    top: 14,
-                    right: 14,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        _Badge(
-                          text: metadata.genderFit,
-                          color: theme.colorScheme.surface.withOpacity(0.75),
-                          foreground: theme.colorScheme.onSurface,
-                        ),
-                        if (onDelete != null) ...[
-                          const SizedBox(height: 8),
-                          _ActionButton(
-                            icon: Icons.delete_outline_rounded,
-                            onPressed: onDelete!,
-                          ),
-                        ],
-                      ],
+                if (metadata.genderFit.isNotEmpty) ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: _Badge(
+                      text: metadata.genderFit,
+                      color: theme.colorScheme.primary.withOpacity(0.8),
+                      foreground: theme.colorScheme.onPrimary,
                     ),
                   ),
-                if (metadata.genderFit.isEmpty && onDelete != null)
-                  Positioned(
-                    top: 14,
-                    right: 14,
-                    child: _ActionButton(
-                      icon: Icons.delete_outline_rounded,
-                      onPressed: onDelete!,
-                    ),
-                  ),
-                if (!isCompact)
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.55),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              item.type.replaceAll('_', ' '),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.2,
-                                color: Colors.white,
-                              ),
-                            ),
-                            if (subtitleParts.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                subtitleParts.join(' • '),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                ],
               ],
             ),
           ),
-          if (!isCompact)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          if (onDelete != null)
+            Positioned(
+              top: 14,
+              right: 14,
+              child: _ActionButton(
+                icon: Icons.delete_outline_rounded,
+                onPressed: onDelete!,
+              ),
+            ),
+          Positioned(
+            left: 18,
+            right: 18,
+            bottom: 18,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  item.type.replaceAll('_', ' '),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                if (subtitleParts.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitleParts.join(' • '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                ],
+                if (visibleChips.isNotEmpty) ...[
+                  const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
                     runSpacing: 6,
@@ -201,19 +174,22 @@ class WardrobeItemCard extends StatelessWidget {
                         (value) => _InfoChip(
                           label: value,
                           theme: theme,
+                          isOverlay: true,
                         ),
                       ),
                       if (overflowCount > 0)
                         _InfoChip(
                           label: '+$overflowCount',
                           theme: theme,
+                          isOverlay: true,
                           isOverflow: true,
                         ),
                     ],
                   ),
                 ],
-              ),
+              ],
             ),
+          ),
         ],
       ),
     );
@@ -262,11 +238,13 @@ class _InfoChip extends StatelessWidget {
     required this.label,
     required this.theme,
     this.isOverflow = false,
+    this.isOverlay = false,
   });
 
   final String label;
   final ThemeData theme;
   final bool isOverflow;
+  final bool isOverlay;
 
   @override
   Widget build(BuildContext context) {
@@ -274,26 +252,32 @@ class _InfoChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: isOverflow
-            ? theme.colorScheme.primary.withOpacity(0.12)
+        color: isOverlay
+            ? Colors.white.withOpacity(isOverflow ? 0.25 : 0.22)
             : theme.colorScheme.secondary.withOpacity(0.9),
         border: Border.all(
-          color: theme.colorScheme.onSecondary.withOpacity(isOverflow ? 0.1 : 0.18),
+          color: isOverlay
+              ? Colors.white.withOpacity(0.4)
+              : theme.colorScheme.onSecondary.withOpacity(isOverflow ? 0.1 : 0.18),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        boxShadow: isOverlay
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
       ),
       child: Text(
         label,
         style: theme.textTheme.labelSmall?.copyWith(
-          color: isOverflow
-              ? theme.colorScheme.primary
-              : theme.colorScheme.onSecondary,
+          color: isOverlay
+              ? Colors.white
+              : isOverflow
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSecondary,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.2,
         ),
