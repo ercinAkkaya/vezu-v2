@@ -182,19 +182,22 @@ class _WardrobeViewState extends State<_WardrobeView> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (sheetContext) => WardrobePreviewSheet(
-        onChangeImage: () {
-          Navigator.of(sheetContext).pop();
-          context.read<WardrobeCubit>().pickItem();
-        },
-        onClearImage: () {
-          Navigator.of(sheetContext).pop();
-          context.read<WardrobeCubit>().clearSelectedImage();
-        },
-        onAnalyze: () {
-          final uid = context.read<AuthCubit>().state.user?.id;
-          context.read<WardrobeCubit>().startAnalysis(uid: uid);
-        },
+      builder: (sheetContext) => BlocProvider.value(
+        value: context.read<WardrobeCubit>(),
+        child: WardrobePreviewSheet(
+          onChangeImage: () {
+            Navigator.of(sheetContext).pop();
+            context.read<WardrobeCubit>().pickItem();
+          },
+          onClearImage: () {
+            Navigator.of(sheetContext).pop();
+            context.read<WardrobeCubit>().clearSelectedImage();
+          },
+          onAnalyze: () {
+            final uid = context.read<AuthCubit>().state.user?.id;
+            context.read<WardrobeCubit>().startAnalysis(uid: uid);
+          },
+        ),
       ),
     );
   }

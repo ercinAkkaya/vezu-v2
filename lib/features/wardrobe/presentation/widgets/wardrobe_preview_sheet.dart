@@ -198,7 +198,11 @@ class _CategorySelectors extends StatelessWidget {
         .map(
           (key) => DropdownMenuItem<String>(
             value: key,
-            child: Text((WardrobeTypeLabels.map[key] ?? key).tr()),
+            child: Text(
+              WardrobeTypeLabels.map.containsKey(key)
+                  ? WardrobeTypeLabels.map[key]!.tr()
+                  : key,
+            ),
           ),
         )
         .toList();
