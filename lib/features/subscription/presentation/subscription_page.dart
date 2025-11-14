@@ -1,10 +1,7 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:vezu/core/components/app_surface_card.dart';
-import 'package:vezu/core/components/outlined_button.dart';
 import 'package:vezu/core/components/paywall_plan_card.dart';
-
 import '../../../core/components/paywall_billing_toggle.dart';
 
 class SubscriptionPage extends StatefulWidget {
@@ -146,9 +143,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF0F172A),
-              Color(0xFF111827),
-              Color(0xFF020617),
+              Color(0xFF050505),
+              Color(0xFF0B0B0B),
+              Color(0xFF000000),
             ],
           ),
         ),
@@ -206,24 +203,6 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             icon: const Icon(Icons.close_rounded, color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          const Spacer(),
-          TextButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Satın alma geri yükleme yakında eklenecek.'),
-                ),
-              );
-            },
-            child: Text(
-              'Satın almayı geri yükle',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: Colors.white.withOpacity(0.76),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
         ],
       ),
     );
@@ -286,8 +265,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: isActive
-                      ? const Color(0xFF6DD5FA)
-                      : Colors.white.withOpacity(0.32),
+                      ? Colors.white
+                      : Colors.white.withOpacity(0.24),
                 ),
               );
             },
@@ -320,7 +299,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                 height: 44,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF52CFFE), Color(0xFF4CA5FF)],
+                    colors: [Color(0xFFFFFFFF), Color(0xFFE0E0E0)],
                   ),
                   borderRadius: BorderRadius.circular(18),
                 ),

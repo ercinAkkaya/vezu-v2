@@ -53,61 +53,51 @@ class PaywallPlanCard extends StatelessWidget {
     final gradientColors = isActive
         ? [
             Colors.white,
-            const Color(0xFFEFF3FF),
+            const Color(0xFFF4F4F4),
           ]
         : isPromoted
-            ? const [Color(0xFF0B1224), Color(0xFF111A32)]
-            : const [Color(0xFF111423), Color(0xFF0A0E19)];
+            ? const [Color(0xFF1E1E1E), Color(0xFF131313)]
+            : const [Color(0xFF161616), Color(0xFF0F0F0F)];
 
     final highlightGradient = LinearGradient(
       colors: isActive
           ? [
-              theme.colorScheme.primary.withOpacity(0.85),
-              theme.colorScheme.primary,
+              Colors.black.withOpacity(0.9),
+              Colors.black.withOpacity(0.8),
             ]
-          : isPromoted
-              ? const [Color(0xFF5A62FF), Color(0xFF6DD5FA)]
-              : [
-                  theme.colorScheme.primary,
-                  theme.colorScheme.primary.withOpacity(0.78),
-                ],
+          : [
+              Colors.white.withOpacity(0.16),
+              Colors.white.withOpacity(0.08),
+            ],
     );
 
-    final titleColor = isActive
-        ? theme.colorScheme.primary
-        : isOnDarkBackground
-            ? Colors.white
-            : theme.colorScheme.onSurface;
+    final titleColor = isActive ? Colors.black : Colors.white;
 
-    final descriptionColor = isOnDarkBackground
-        ? Colors.white.withOpacity(0.72)
-        : theme.colorScheme.onSecondary.withOpacity(0.9);
+    final descriptionColor = isActive
+        ? Colors.black.withOpacity(0.7)
+        : Colors.white.withOpacity(0.68);
 
-    final priceColor = isActive
-        ? theme.colorScheme.primary
-        : isOnDarkBackground
-            ? Colors.white
-            : theme.colorScheme.primary;
+    final priceColor = isActive ? Colors.black : Colors.white;
 
-    final billingColor = isOnDarkBackground
-        ? Colors.white.withOpacity(0.7)
-        : theme.colorScheme.onSecondary;
+    final billingColor = isActive
+        ? Colors.black.withOpacity(0.6)
+        : Colors.white.withOpacity(0.7);
 
-    final savingsColor = isOnDarkBackground
-        ? const Color(0xFF9CC5FF)
-        : theme.colorScheme.primary;
+    final savingsColor = isActive
+        ? Colors.black.withOpacity(0.75)
+        : Colors.white.withOpacity(0.8);
 
-    final footerNoteColor = isOnDarkBackground
-        ? Colors.white.withOpacity(0.6)
-        : theme.colorScheme.onSecondary;
+    final footerNoteColor = isActive
+        ? Colors.black.withOpacity(0.6)
+        : Colors.white.withOpacity(0.55);
 
     final borderColor = isActive
-        ? theme.colorScheme.primary.withOpacity(0.22)
+        ? Colors.black.withOpacity(0.12)
         : Colors.white.withOpacity(0.08);
 
     final shadowColor = isActive
-        ? theme.colorScheme.primary.withOpacity(0.24)
-        : Colors.black.withOpacity(0.35);
+        ? Colors.black.withOpacity(0.2)
+        : Colors.black.withOpacity(0.45);
 
     final blurRadius = isActive ? 32.0 : isPromoted ? 45.0 : 32.0;
 
