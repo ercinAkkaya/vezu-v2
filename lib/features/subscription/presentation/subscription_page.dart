@@ -185,7 +185,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       const SizedBox(height: 32),
                       _buildGuaranteeCard(theme),
                       const SizedBox(height: 22),
-                      _buildFooterActions(context, theme),
+                      _buildFooterNote(theme),
                     ],
                   ),
                 ),
@@ -286,8 +286,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: isActive
-                      ? theme.colorScheme.primary
-                      : Colors.white.withOpacity(0.28),
+                      ? const Color(0xFF6DD5FA)
+                      : Colors.white.withOpacity(0.32),
                 ),
               );
             },
@@ -362,24 +362,14 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     );
   }
 
-  Widget _buildFooterActions(BuildContext context, ThemeData theme) {
-    return Column(
-      children: [
-        SecondaryOutlinedButton(
-          label: 'Daha sonra',
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.chevron_left_rounded),
-        ),
-        const SizedBox(height: 14),
-        Text(
-          'Abonelik ücretleri yerel vergiler nedeniyle değişiklik gösterebilir. Satın alma App Store veya Play Store hesaplarından tahsil edilir.',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: Colors.white.withOpacity(0.5),
-            height: 1.3,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+  Widget _buildFooterNote(ThemeData theme) {
+    return Text(
+      'Abonelik ücretleri yerel vergiler nedeniyle değişiklik gösterebilir. Satın alma App Store veya Play Store hesaplarından tahsil edilir.',
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: Colors.white.withOpacity(0.55),
+        height: 1.3,
+      ),
+      textAlign: TextAlign.center,
     );
   }
 

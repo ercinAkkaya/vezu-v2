@@ -48,7 +48,7 @@ class PaywallPlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final isOnDarkBackground = !isActive && isPromoted;
+    final isOnDarkBackground = !isActive;
 
     final gradientColors = isActive
         ? [
@@ -56,11 +56,8 @@ class PaywallPlanCard extends StatelessWidget {
             const Color(0xFFEFF3FF),
           ]
         : isPromoted
-            ? const [Color(0xFF0F172A), Color(0xFF1E293B)]
-            : [
-                theme.colorScheme.surface.withOpacity(0.94),
-                theme.colorScheme.surface.withOpacity(0.98),
-              ];
+            ? const [Color(0xFF0B1224), Color(0xFF111A32)]
+            : const [Color(0xFF111423), Color(0xFF0A0E19)];
 
     final highlightGradient = LinearGradient(
       colors: isActive
@@ -106,11 +103,11 @@ class PaywallPlanCard extends StatelessWidget {
 
     final borderColor = isActive
         ? theme.colorScheme.primary.withOpacity(0.22)
-        : Colors.white.withOpacity(isPromoted ? 0.06 : 0.24);
+        : Colors.white.withOpacity(0.08);
 
     final shadowColor = isActive
         ? theme.colorScheme.primary.withOpacity(0.24)
-        : Colors.black.withOpacity(isPromoted ? 0.3 : 0.15);
+        : Colors.black.withOpacity(0.35);
 
     final blurRadius = isActive ? 32.0 : isPromoted ? 45.0 : 32.0;
 
