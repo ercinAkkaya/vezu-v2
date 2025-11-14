@@ -10,7 +10,6 @@ import "package:vezu/core/components/weather_summary_card.dart";
 import "package:vezu/core/components/welcome_header.dart";
 import "package:vezu/core/navigation/app_router.dart";
 import "package:vezu/features/wardrobe/presentation/widgets/wardrobe_item_carousel.dart";
-import "package:vezu/features/wardrobe/domain/entities/clothing_item.dart";
 import "package:vezu/features/auth/domain/entities/user_entity.dart";
 import "package:vezu/features/auth/presentation/cubit/auth_cubit.dart";
 import "package:vezu/features/shell/presentation/cubit/bottom_nav_cubit.dart";

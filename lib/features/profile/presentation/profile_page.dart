@@ -7,13 +7,14 @@ import 'package:vezu/core/components/outlined_button.dart';
 import 'package:vezu/core/components/subscription_card.dart';
 import 'package:vezu/features/auth/domain/entities/user_entity.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:vezu/core/components/paywall_billing_toggle.dart';
 import 'package:vezu/features/profile/presentation/widgets/edit_profile_sheet.dart';
 import 'package:vezu/features/home/presentation/settings_page.dart';
 import 'package:vezu/features/shell/presentation/cubit/bottom_nav_cubit.dart';
 import 'package:vezu/features/legal/presentation/privacy_policy_page.dart';
 import 'package:vezu/features/support/presentation/help_support_page.dart';
 
-import '../../../core/navigation/app_router.dart';
+import 'package:vezu/core/navigation/app_router.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -247,7 +248,13 @@ class ProfilePage extends StatelessWidget {
                           SubscriptionCard(
                             currentPlan: subscriptionPlan,
                             onUpgrade: (plan) {
-                              // TODO: integrate with subscription flow
+                              final cycle = plan == SubscriptionPlan.yearly
+                                  ? PaywallBillingCycle.yearly
+                                  : PaywallBillingCycle.monthly;
+                              Navigator.of(context).pushNamed(
+                                AppRoutes.subscription,
+                                arguments: cycle,
+                              );
                             },
                           ),
                           const SizedBox(height: 24),

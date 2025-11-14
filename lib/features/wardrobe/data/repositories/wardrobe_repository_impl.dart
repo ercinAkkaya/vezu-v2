@@ -1,9 +1,7 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vezu/features/wardrobe/data/datasources/wardrobe_remote_data_source.dart';
 import 'package:vezu/features/wardrobe/data/models/clothing_metadata_model.dart';
-import 'package:vezu/features/wardrobe/data/models/clothing_item_model.dart';
 import 'package:vezu/features/wardrobe/domain/entities/clothing_item.dart';
 import 'package:vezu/features/wardrobe/domain/errors/wardrobe_failure.dart';
 import 'package:vezu/features/wardrobe/domain/repositories/wardrobe_repository.dart';
