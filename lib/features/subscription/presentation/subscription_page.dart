@@ -1,7 +1,9 @@
 import 'dart:math';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:vezu/core/components/app_surface_card.dart';
 import 'package:vezu/core/components/paywall_plan_card.dart';
+
 import '../../../core/components/paywall_billing_toggle.dart';
 
 class SubscriptionPage extends StatefulWidget {
@@ -17,86 +19,20 @@ class SubscriptionPage extends StatefulWidget {
 }
 
 class _SubscriptionPageState extends State<SubscriptionPage> {
+  static const _planOrder = [
+    'monthly_premium',
+    'monthly_pro',
+    'yearly_pro',
+  ];
+
+  static const Map<String, PaywallBillingCycle> _planCycleMap = {
+    'monthly_premium': PaywallBillingCycle.monthly,
+    'monthly_pro': PaywallBillingCycle.monthly,
+    'yearly_pro': PaywallBillingCycle.yearly,
+  };
+
   late final PageController _pageController;
   late int _currentPage;
-
-  static final _plans = <_PlanData>[
-    const _PlanData(
-      id: 'monthly_premium',
-      cycle: PaywallBillingCycle.monthly,
-      title: 'Premium',
-      description: 'Yeni kombin önerileri için güçlü bir başlangıç yap.',
-      priceLabel: '\$4',
-      billingLabel: '/ay',
-      badgeLabel: 'Başlangıç',
-      ctaLabel: 'Premium’a geç',
-      features: [
-        PaywallFeatureData(
-          label: '30 fotoğraf yükleme hakkı',
-          isHighlighted: true,
-        ),
-        PaywallFeatureData(label: 'Sınırlı kombin hakları'),
-        PaywallFeatureData(label: 'Tamamen reklamsız deneyim'),
-      ],
-    ),
-    const _PlanData(
-      id: 'monthly_pro',
-      cycle: PaywallBillingCycle.monthly,
-      title: 'Pro',
-      description: 'Stil koçluğu ve gelişmiş gardırop yönetimi.',
-      priceLabel: '\$6.99',
-      billingLabel: '/ay',
-      badgeLabel: 'En popüler',
-      ctaLabel: 'Pro’ya yükselt',
-      isPromoted: true,
-      features: [
-        PaywallFeatureData(
-          label: '50 fotoğraf yükleme hakkı',
-          isHighlighted: true,
-        ),
-        PaywallFeatureData(label: 'Genişletilmiş kombin hakları'),
-        PaywallFeatureData(label: 'Tamamen reklamsız deneyim'),
-        PaywallFeatureData(
-          label: 'Gardırop analizi (yakında)',
-          isComingSoon: true,
-        ),
-        PaywallFeatureData(
-          label: 'AR ile kombin giydirme (yakında)',
-          isComingSoon: true,
-        ),
-      ],
-    ),
-    const _PlanData(
-      id: 'yearly_pro',
-      cycle: PaywallBillingCycle.yearly,
-      title: 'Pro Yıllık',
-      description: 'Pro deneyiminin tüm ayrıcalıkları en iyi fiyatla.',
-      priceLabel: '\$69.99',
-      billingLabel: '/yıl',
-      badgeLabel: 'En avantajlı',
-      savingsLabel: 'Aylık \$5.83’e denk gelir',
-      ctaLabel: 'Yıllık Pro’ya geç',
-      isPromoted: true,
-      footerNote:
-          'Gardırop analizi ve AR deneyimi yayınlandığında hesabına otomatik eklenir.',
-      features: [
-        PaywallFeatureData(
-          label: '70 fotoğraf yükleme hakkı',
-          isHighlighted: true,
-        ),
-        PaywallFeatureData(label: 'Genişletilmiş kombin hakları'),
-        PaywallFeatureData(label: 'Tamamen reklamsız deneyim'),
-        PaywallFeatureData(
-          label: 'Gardırop analizi (yakında)',
-          isComingSoon: true,
-        ),
-        PaywallFeatureData(
-          label: 'AR ile kombin giydirme (yakında)',
-          isComingSoon: true,
-        ),
-      ],
-    ),
-  ];
 
   @override
   void initState() {
@@ -105,8 +41,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     final initialCycle = widget.initialCycle;
     var initialIndex = fallbackIndex;
     if (initialCycle != null) {
-      final matchIndex =
-          _plans.indexWhere((plan) => plan.cycle == initialCycle);
+      final matchIndex = _planOrder.indexWhere(
+        (planId) => _planCycleMap[planId] == initialCycle,
+      );
       if (matchIndex != -1) {
         initialIndex = matchIndex;
       }
@@ -162,7 +99,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Kendine Uygun Planı Seç',
+                        'subscriptionHeroTitle'.tr(),
                         style: theme.textTheme.displaySmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
@@ -171,7 +108,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Stil yolculuğunu hızlandıran abonelik planları. Yeni jenerasyon gardırop araçlarıyla tanış.',
+                        'subscriptionHeroDescription'.tr(),
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: Colors.white.withOpacity(0.72),
                           height: 1.4,
@@ -209,7 +146,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   }
 
   Widget _buildPlanCarousel(ThemeData theme) {
-    final planCount = _plans.length;
+    final plans = _buildPlans(context);
+    final planCount = plans.length;
 
     return Column(
       children: [
@@ -221,7 +159,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             onPageChanged: (index) => setState(() => _currentPage = index),
             itemCount: planCount,
             itemBuilder: (context, index) {
-              final plan = _plans[index];
+              final plan = plans[index];
               final isActive = _currentPage == index;
 
               return AnimatedPadding(
@@ -242,7 +180,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                   footerNote: plan.footerNote,
                   features: plan.features,
                   ctaLabel: plan.ctaLabel,
-                  onSubscribe: () => _handleSubscribe(plan.id),
+                  onSubscribe: () => _handleSubscribe(plan.title),
                   isPromoted: plan.isPromoted,
                   isActive: isActive,
                 ),
@@ -311,7 +249,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
-                  'Her plan reklamsız ve anında aktif. Dilediğin zaman iptal edebilirsin.',
+                  'subscriptionGuaranteeBody'.tr(),
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -322,19 +260,19 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             ],
           ),
           const SizedBox(height: 18),
-          const _GuaranteeBullet(
+          _GuaranteeBullet(
             icon: Icons.shield_moon_rounded,
-            label: 'Verilerin güvende, şifreli olarak saklanıyor.',
+            label: 'subscriptionGuaranteeSafe'.tr(),
           ),
           const SizedBox(height: 12),
-          const _GuaranteeBullet(
+          _GuaranteeBullet(
             icon: Icons.check_circle_outline_rounded,
-            label: 'Yeni özellikler Pro planlara otomatik gelir.',
+            label: 'subscriptionGuaranteeUpdates'.tr(),
           ),
           const SizedBox(height: 12),
-          const _GuaranteeBullet(
+          _GuaranteeBullet(
             icon: Icons.timer_outlined,
-            label: 'Planını istediğin zaman değiştir ya da iptal et.',
+            label: 'subscriptionGuaranteeFlexible'.tr(),
           ),
         ],
       ),
@@ -343,7 +281,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
   Widget _buildFooterNote(ThemeData theme) {
     return Text(
-      'Abonelik ücretleri yerel vergiler nedeniyle değişiklik gösterebilir. Satın alma App Store veya Play Store hesaplarından tahsil edilir.',
+      'subscriptionFooterNote'.tr(),
       style: theme.textTheme.bodySmall?.copyWith(
         color: Colors.white.withOpacity(0.55),
         height: 1.3,
@@ -352,12 +290,105 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     );
   }
 
-  void _handleSubscribe(String planId) {
+  void _handleSubscribe(String planTitle) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$planId planı için abonelik akışı yakında hazır olacak.'),
+        content: Text(
+          'subscriptionSnackComingSoon'.tr(args: [planTitle]),
+        ),
       ),
     );
+  }
+
+  List<_PlanData> _buildPlans(BuildContext context) {
+    return [
+      _PlanData(
+        id: 'monthly_premium',
+        cycle: PaywallBillingCycle.monthly,
+        title: 'subscriptionPlanPremiumTitle'.tr(),
+        description: 'subscriptionPlanPremiumDescription'.tr(),
+        priceLabel: 'subscriptionPlanPremiumPrice'.tr(),
+        billingLabel: 'subscriptionPlanPremiumBilling'.tr(),
+        badgeLabel: 'subscriptionPlanPremiumBadge'.tr(),
+        ctaLabel: 'subscriptionPlanPremiumCta'.tr(),
+        features: [
+          PaywallFeatureData(
+            label: 'subscriptionPlanPremiumFeaturePhotos'.tr(),
+            isHighlighted: true,
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanPremiumFeatureCombos'.tr(),
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanFeatureAdFree'.tr(),
+          ),
+        ],
+      ),
+      _PlanData(
+        id: 'monthly_pro',
+        cycle: PaywallBillingCycle.monthly,
+        title: 'subscriptionPlanMonthlyProTitle'.tr(),
+        description: 'subscriptionPlanMonthlyProDescription'.tr(),
+        priceLabel: 'subscriptionPlanMonthlyProPrice'.tr(),
+        billingLabel: 'subscriptionPlanMonthlyProBilling'.tr(),
+        badgeLabel: 'subscriptionPlanMonthlyProBadge'.tr(),
+        ctaLabel: 'subscriptionPlanMonthlyProCta'.tr(),
+        isPromoted: true,
+        features: [
+          PaywallFeatureData(
+            label: 'subscriptionPlanMonthlyProFeaturePhotos'.tr(),
+            isHighlighted: true,
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanMonthlyProFeatureCombos'.tr(),
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanFeatureAdFree'.tr(),
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanFeatureWardrobeAnalysisSoon'.tr(),
+            isComingSoon: true,
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanFeatureArTryOnSoon'.tr(),
+            isComingSoon: true,
+          ),
+        ],
+      ),
+      _PlanData(
+        id: 'yearly_pro',
+        cycle: PaywallBillingCycle.yearly,
+        title: 'subscriptionPlanYearlyProTitle'.tr(),
+        description: 'subscriptionPlanYearlyProDescription'.tr(),
+        priceLabel: 'subscriptionPlanYearlyProPrice'.tr(),
+        billingLabel: 'subscriptionPlanYearlyProBilling'.tr(),
+        badgeLabel: 'subscriptionPlanYearlyProBadge'.tr(),
+        savingsLabel: 'subscriptionPlanYearlyProSavings'.tr(),
+        ctaLabel: 'subscriptionPlanYearlyProCta'.tr(),
+        isPromoted: true,
+        footerNote: 'subscriptionPlanYearlyProFooter'.tr(),
+        features: [
+          PaywallFeatureData(
+            label: 'subscriptionPlanYearlyProFeaturePhotos'.tr(),
+            isHighlighted: true,
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanMonthlyProFeatureCombos'.tr(),
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanFeatureAdFree'.tr(),
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanFeatureWardrobeAnalysisSoon'.tr(),
+            isComingSoon: true,
+          ),
+          PaywallFeatureData(
+            label: 'subscriptionPlanFeatureArTryOnSoon'.tr(),
+            isComingSoon: true,
+          ),
+        ],
+      ),
+    ];
   }
 
 }

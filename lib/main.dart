@@ -28,6 +28,9 @@ import 'package:vezu/features/auth/domain/usecases/sign_in_with_google.dart';
 import 'package:vezu/features/auth/domain/usecases/sign_out.dart';
 import 'package:vezu/features/auth/domain/usecases/update_user_profile.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:vezu/features/combine/data/repositories/combination_repository_impl.dart';
+import 'package:vezu/features/combine/domain/repositories/combination_repository.dart';
+import 'package:vezu/features/combine/domain/usecases/generate_combination.dart';
 import 'package:vezu/features/onboarding/data/datasources/onboarding_local_data_source.dart';
 import 'package:vezu/features/onboarding/data/repositories/onboarding_repository_impl.dart';
 import 'package:vezu/features/onboarding/domain/repositories/onboarding_repository.dart';
@@ -112,11 +115,15 @@ Future<void> main() async {
   );
   final WardrobeRepository wardrobeRepository =
       WardrobeRepositoryImpl(remoteDataSource: wardrobeRemoteDataSource);
+  final CombinationRepository combinationRepository =
+      CombinationRepositoryImpl(gptService: gptService);
   final addClothingItemUseCase = AddClothingItemUseCase(wardrobeRepository);
   final watchWardrobeItemsUseCase =
       WatchWardrobeItemsUseCase(wardrobeRepository);
   final deleteClothingItemUseCase =
       DeleteClothingItemUseCase(wardrobeRepository);
+  final generateCombinationUseCase =
+      GenerateCombinationUseCase(combinationRepository);
 
   runApp(
     EasyLocalization(
@@ -169,6 +176,12 @@ Future<void> main() async {
           ),
           RepositoryProvider<DeleteClothingItemUseCase>.value(
             value: deleteClothingItemUseCase,
+          ),
+          RepositoryProvider<CombinationRepository>.value(
+            value: combinationRepository,
+          ),
+          RepositoryProvider<GenerateCombinationUseCase>.value(
+            value: generateCombinationUseCase,
           ),
         ],
         child: BlocProvider(

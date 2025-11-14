@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vezu/core/components/paywall_billing_toggle.dart';
 import 'package:vezu/features/auth/presentation/auth_page.dart';
 import 'package:vezu/features/auth/presentation/register_page.dart';
-import 'package:vezu/features/combination/presentation/combination_create_page.dart';
+import 'package:vezu/features/combine/presentation/combine_page.dart';
 import 'package:vezu/features/onboarding/presentation/onboarding_page.dart';
 import 'package:vezu/features/shell/presentation/main_shell_page.dart';
 import 'package:vezu/features/splash/presentation/splash_page.dart';
@@ -33,7 +33,7 @@ class AppRouter {
         return MaterialPageRoute<void>(builder: (_) => const MainShellPage());
       case AppRoutes.combinationCreate:
         return MaterialPageRoute<void>(
-          builder: (_) => const CombinationCreatePage(),
+          builder: (_) => const CombinePage(),
           fullscreenDialog: true,
         );
       case AppRoutes.subscription:

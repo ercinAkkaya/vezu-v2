@@ -137,8 +137,61 @@ Return ONLY the JSON object.
   Future<String> generateCombination({
     required String prompt,
     required List<Map<String, dynamic>> wardrobeItems,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final apiKey = AppConstants.gptApiKey;
+    if (apiKey.isEmpty) {
+      throw Exception('GPT API key is not configured.');
+    }
+
+    final combinedPrompt = '''
+$prompt
+''';
+
+    final payload = {
+      'model': _model,
+      'input': [
+        {
+          'role': 'user',
+          'content': [
+            {
+              'type': 'input_text',
+              'text': combinedPrompt,
+            },
+          ],
+        },
+      ],
+      'temperature': 0.7,
+    };
+
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        _endpoint,
+        data: payload,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $apiKey',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      final data = response.data;
+      if (data == null) {
+        throw Exception('Empty response from GPT service.');
+      }
+
+      final text = _extractTextContent(data);
+      if (text == null || text.isEmpty) {
+        throw Exception('Unable to parse GPT response content.');
+      }
+
+      return text
+          .replaceAll('```json', '')
+          .replaceAll('```', '')
+          .trim();
+    } on DioException catch (error, stackTrace) {
+      Error.throwWithStackTrace(error, stackTrace);
+    }
   }
 
   String? _extractTextContent(Map<String, dynamic> data) {
