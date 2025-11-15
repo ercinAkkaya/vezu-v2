@@ -54,6 +54,12 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Hava durumunu gösterebilmek ve kombin önerilerini kişiselleştirebilmek için konumunuza ihtiyaç duyuyoruz.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Dolabına kıyafet ekleyebilmek için fotoğraf arşivine ihtiyaç duyuyoruz.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Uygulama, seçtiğin görselleri kaydedebilmek için fotoğraf arşivine içerik eklemelidir.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Dolabına yeni parçalar eklerken kamera yoluyla fotoğraf çekebilmemiz gerekiyor.</string>
 	<!-- Google Sign-In -->
 	<key>CFBundleURLTypes</key>
 	<array>
