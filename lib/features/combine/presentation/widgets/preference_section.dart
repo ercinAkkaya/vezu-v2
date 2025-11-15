@@ -14,6 +14,7 @@ class CombinationPreferenceSection extends StatelessWidget {
     required this.onVibeChanged,
     required this.onAccessoriesChanged,
     required this.onBoldColorsChanged,
+    required this.onPromptChanged,
   });
 
   final CombinationPreference preference;
@@ -22,6 +23,7 @@ class CombinationPreferenceSection extends StatelessWidget {
   final ValueChanged<String> onVibeChanged;
   final ValueChanged<bool> onAccessoriesChanged;
   final ValueChanged<bool> onBoldColorsChanged;
+  final ValueChanged<String> onPromptChanged;
 
   static const _occasionOptions = [
     _PreferenceOption(labelKey: 'combinationEventOffice', value: 'office'),
@@ -44,6 +46,10 @@ class CombinationPreferenceSection extends StatelessWidget {
     _PreferenceOption(labelKey: 'combineDressCasual', value: 'casual'),
     _PreferenceOption(labelKey: 'combineDressSmart', value: 'smart_casual'),
     _PreferenceOption(labelKey: 'combineDressFormal', value: 'formal'),
+    _PreferenceOption(labelKey: 'combineDressSemiFormal', value: 'semi_formal'),
+    _PreferenceOption(labelKey: 'combineDressBusiness', value: 'business'),
+    _PreferenceOption(labelKey: 'combineDressCreative', value: 'creative'),
+    _PreferenceOption(labelKey: 'combineDressBlackTie', value: 'black_tie'),
   ];
 
   static const _vibeOptions = [
@@ -51,6 +57,14 @@ class CombinationPreferenceSection extends StatelessWidget {
     _PreferenceOption(labelKey: 'combineVibeSporty', value: 'sporty_clean'),
     _PreferenceOption(labelKey: 'combineVibeStreet', value: 'street_luxe'),
     _PreferenceOption(labelKey: 'combineVibeBold', value: 'bold_editorial'),
+    _PreferenceOption(
+      labelKey: 'combineVibeRomantic',
+      value: 'romantic_poetic',
+    ),
+    _PreferenceOption(labelKey: 'combineVibeRetro', value: 'retro_future'),
+    _PreferenceOption(labelKey: 'combineVibeChill', value: 'chill_relaxed'),
+    _PreferenceOption(labelKey: 'combineVibeEdgy', value: 'edgy_structured'),
+    _PreferenceOption(labelKey: 'combineVibePlayful', value: 'playful_color'),
   ];
 
   @override
@@ -112,6 +126,25 @@ class CombinationPreferenceSection extends StatelessWidget {
             onChanged: onBoldColorsChanged,
           ),
           const SizedBox(height: 24),
+          CombinationSectionHeader(
+            titleKey: 'combinePromptTitle',
+            subtitleKey: 'combinePromptSubtitle',
+          ),
+          const SizedBox(height: 12),
+          _PromptInputField(
+            value: preference.customPrompt,
+            onChanged: onPromptChanged,
+            hintText: 'combinePromptHint'.tr(),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'combinePromptHelper'.tr(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSecondary.withValues(alpha: 0.8),
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -150,9 +183,11 @@ class CombinationPreferenceSection extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.3),
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
         ),
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.35),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: 0.35,
+        ),
       ),
       child: Row(
         children: [
@@ -164,10 +199,7 @@ class CombinationPreferenceSection extends StatelessWidget {
               ),
             ),
           ),
-          Switch.adaptive(
-            value: value,
-            onChanged: onChanged,
-          ),
+          Switch.adaptive(value: value, onChanged: onChanged),
         ],
       ),
     );
@@ -181,3 +213,85 @@ class _PreferenceOption {
   final String value;
 }
 
+class _PromptInputField extends StatefulWidget {
+  const _PromptInputField({
+    required this.value,
+    required this.onChanged,
+    required this.hintText,
+  });
+
+  final String value;
+  final ValueChanged<String> onChanged;
+  final String hintText;
+
+  @override
+  State<_PromptInputField> createState() => _PromptInputFieldState();
+}
+
+class _PromptInputFieldState extends State<_PromptInputField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(covariant _PromptInputField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != _controller.text) {
+      _controller.value = TextEditingValue(
+        text: widget.value,
+        selection: TextSelection.collapsed(offset: widget.value.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return TextField(
+      controller: _controller,
+      minLines: 2,
+      maxLines: 4,
+      onChanged: widget.onChanged,
+      style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+      decoration: InputDecoration(
+        hintText: widget.hintText,
+        filled: true,
+        fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: 0.45,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(22),
+          borderSide: BorderSide(
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(22),
+          borderSide: BorderSide(
+            color: theme.colorScheme.outline.withValues(alpha: 0.25),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(22),
+          borderSide: BorderSide(
+            color: theme.colorScheme.primary.withValues(alpha: 0.6),
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
+        ),
+      ),
+    );
+  }
+}

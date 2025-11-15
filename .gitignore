@@ -33,13 +33,10 @@ migrate_working_dir/
 /build/
 /coverage/
 
-<<<<<<< HEAD
-=======
 # Secrets & credentials
 assets/keys/
 .env
 
->>>>>>> 53f3ee8f4913e25a77186e615ba45b23fc996650
 # Symbolication related
 app.*.symbols
 

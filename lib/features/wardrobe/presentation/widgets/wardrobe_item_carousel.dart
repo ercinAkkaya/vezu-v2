@@ -173,7 +173,7 @@ class _SpotlightItemCard extends StatelessWidget {
     return Container(
       width: 160,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(28),
         gradient: LinearGradient(
           colors: [
             Colors.black.withOpacity(0.02),
@@ -203,10 +203,12 @@ class _SpotlightItemCard extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(26),
             child: Image.network(
               item.imageUrl,
               fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
               loadingBuilder: (context, child, progress) {
                 if (progress == null) return child;
                 return Container(
@@ -233,7 +235,7 @@ class _SpotlightItemCard extends StatelessWidget {
           ),
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(26),
               gradient: LinearGradient(
                 colors: [
                   Colors.black.withOpacity(0.05),

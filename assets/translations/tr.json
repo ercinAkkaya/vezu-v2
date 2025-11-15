@@ -138,8 +138,6 @@
   "wardrobePreviewChange": "Başka fotoğraf seç",
   "wardrobeAnalyzeButton": "Analiz et",
   "wardrobeAnalyzeProcessing": "Kıyafet analiz ediliyor...",
-<<<<<<< HEAD
-=======
   "wardrobeAnalyzeSuccess": "Parça analiz edilip gardırobuna kaydedildi.",
   "wardrobeAnalyzeError": "Bu parçayı analiz edemedik. Lütfen tekrar dene.",
   "wardrobeAnalyzeMissingSelection": "Analizden önce kategori ve tür seçmelisin.",
@@ -190,7 +188,6 @@
   "wardrobeTypeCoat": "Palto",
   "wardrobeTypeBlazer": "Blazer",
   "wardrobeTypeVest": "Yelek",
->>>>>>> 53f3ee8f4913e25a77186e615ba45b23fc996650
   "helpTitle": "Yardım & Destek",
   "helpSubtitle": "Hızlı cevaplara ulaş veya destek ekibimizle iletişime geç.",
   "helpContactTitle": "Ek desteğe mi ihtiyacın var?",
@@ -236,9 +233,6 @@
   "privacySection7Title": "7. Bu Politikadaki Değişiklikler",
   "privacySection7Point1": "Bu Gizlilik Politikasını zaman zaman güncelleyebiliriz. Güncellemeleri uygulama içinden veya e-posta ile bildiririz.",
   "privacySection8Title": "8. Bize Ulaşın",
-<<<<<<< HEAD
-  "privacySection8Point1": "E-posta: appistryco@gmail.com"
-=======
   "privacySection8Point1": "E-posta: appistryco@gmail.com",
   "combinationCreateTitle": "Bir sonraki kombini planla",
   "combinationCreateSubtitle": "Etkinlikten bahset, sana özel bir kombin önerelim.",
@@ -292,6 +286,15 @@
 "combineAccessorySingle": "Aksesuar: {0}",
 "combineWarningNone": "Uyarı yok",
   "combineAccentLabel": "Vurgu: {0}",
+  "combineResultOccasion": "Etkinlik",
+  "combineResultDressCode": "Dress code",
+  "combineResultVibe": "Stil vibe’ı",
+  "combineResultWeather": "Hava sinyali",
+  "combineResultPrompt": "Senin notun",
+  "combineResultAccessoriesOn": "Aksesuar serbest",
+  "combineResultAccessoriesOff": "Aksesuar kapalı",
+  "combineResultBoldColorsOn": "Cesur renk serbest",
+  "combineResultBoldColorsOff": "Sakin palet",
   "combinationGenerateLoading": "Kombin hazırlanıyor...",
   "combinePreferenceIncomplete": "Lütfen kombin üretmeden önce etkinlik, dress code, hava durumu ve vibe seçimlerini yap.",
   "combineDressCodeTitle": "Dress code odağı",
@@ -302,12 +305,20 @@
   "combineVibeSubtitle": "Stilin yaratıcı yönünü belirle.",
   "combineAccessoriesToggle": "Aksesuar önerileri ekle",
   "combineBoldColorsToggle": "Cesur renklere izin ver",
+  "combinePromptTitle": "Kendi notunu ekle",
+  "combinePromptSubtitle": "Kombine dair ekstra istek ya da limitlerini paylaş.",
+  "combinePromptHint": "Örn. kobalt loaferları öne çıkar, denim kullanma.",
+  "combinePromptHelper": "Boş bırakırsan VEZU özgürce ilham alır.",
   "combineWeatherCardTitle": "Canlı hava özeti",
   "combineWeatherCardSubtitle": "Günün havasını kombine ilham olarak kullan.",
   "combineWeatherRefresh": "Yenile",
   "combineDressCasual": "Rahat casual",
   "combineDressSmart": "Smart casual",
   "combineDressFormal": "Formal",
+  "combineDressSemiFormal": "Yarı formal",
+  "combineDressBusiness": "Business şıklığı",
+  "combineDressCreative": "Yaratıcı trend",
+  "combineDressBlackTie": "Black tie ışıltısı",
   "combineWeatherCool": "Serin katmanlar",
   "combineWeatherMild": "Ilık & esintili",
   "combineWeatherWarm": "Sıcak & hafif",
@@ -317,6 +328,11 @@
   "combineVibeSporty": "Sportif sade",
   "combineVibeStreet": "Street luxe",
   "combineVibeBold": "Cesur editorial",
+  "combineVibeRomantic": "Romantik yumuşak",
+  "combineVibeRetro": "Retro future",
+  "combineVibeChill": "Sakin & zahmetsiz",
+  "combineVibeEdgy": "Keskin & iddialı",
+  "combineVibePlayful": "Oyunbaz renk patlaması",
   "combineEventWeekend": "Hafta sonu kaçamağı",
   "combineEventBrunch": "Brunch",
   "combineEventWorkshop": "Atölye",
@@ -359,5 +375,4 @@
   "subscriptionGuaranteeFlexible": "Planını istediğin zaman değiştir ya da iptal et.",
   "subscriptionFooterNote": "Abonelik ücretleri yerel vergilere göre değişebilir. Ödemeler App Store veya Play Store hesabından tahsil edilir.",
   "subscriptionSnackComingSoon": "{0} plan akışı çok yakında hazır olacak."
->>>>>>> 53f3ee8f4913e25a77186e615ba45b23fc996650
 }

@@ -11,12 +11,17 @@ class CombinationPromptBuilder {
   }) {
     final preferenceJson = jsonEncode(preference.toMap());
     final wardrobeJson = jsonEncode(wardrobePayload);
+    final customPrompt = preference.customPrompt.trim();
+    final customPromptSection = customPrompt.isEmpty
+        ? ''
+        : '\n### USER EXTRA PROMPT\n$customPrompt\n';
 
     return '''
 You are VEZU Mode Icon — an unapologetic, data-obsessed fashion director who only speaks in decisive editorials. Every answer must feel like a couture creative brief.
 
 ### USER BRIEF (JSON)
 $preferenceJson
+$customPromptSection
 
 ### WARDROBE INDEX (COMPACT JSON ARRAY)
 Each entry already contains everything you need (id, slot, colors, keywords). Use them smartly:
@@ -56,4 +61,3 @@ Return ONLY the JSON object.
 ''';
   }
 }
-

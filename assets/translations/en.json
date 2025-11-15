@@ -138,8 +138,6 @@
   "wardrobePreviewChange": "Choose another photo",
   "wardrobeAnalyzeButton": "Analyze outfit",
   "wardrobeAnalyzeProcessing": "Analyzing your item...",
-<<<<<<< HEAD
-=======
   "wardrobeAnalyzeSuccess": "Item analyzed and saved to your wardrobe.",
   "wardrobeAnalyzeError": "We couldn't analyze this item. Please try again.",
   "wardrobeAnalyzeMissingSelection": "Please choose category and type before analyzing.",
@@ -190,7 +188,6 @@
   "wardrobeTypeCoat": "Coat",
   "wardrobeTypeBlazer": "Blazer",
   "wardrobeTypeVest": "Vest",
->>>>>>> 53f3ee8f4913e25a77186e615ba45b23fc996650
   "helpTitle": "Help & Support",
   "helpSubtitle": "Find quick answers or reach our support team.",
   "helpContactTitle": "Need additional help?",
@@ -236,9 +233,6 @@
   "privacySection7Title": "7. Changes to This Policy",
   "privacySection7Point1": "We may update this Privacy Policy from time to time. Updates will be communicated via the app or email.",
   "privacySection8Title": "8. Contact Us",
-<<<<<<< HEAD
-  "privacySection8Point1": "Email: appistryco@gmail.com"
-=======
   "privacySection8Point1": "Email: appistryco@gmail.com",
   "combinationCreateTitle": "Plan your next look",
   "combinationCreateSubtitle": "Tell us about the occasion and we’ll craft a tailored outfit.",
@@ -292,6 +286,15 @@
 "combineAccessorySingle": "Accessory: {0}",
 "combineWarningNone": "No warnings",
   "combineAccentLabel": "Accent: {0}",
+  "combineResultOccasion": "Occasion",
+  "combineResultDressCode": "Dress code",
+  "combineResultVibe": "Style vibe",
+  "combineResultWeather": "Weather cue",
+  "combineResultPrompt": "Your note",
+  "combineResultAccessoriesOn": "Accessories allowed",
+  "combineResultAccessoriesOff": "Accessories disabled",
+  "combineResultBoldColorsOn": "Bold colors welcome",
+  "combineResultBoldColorsOff": "Muted palette",
   "combinationGenerateLoading": "Preparing your look...",
   "combinePreferenceIncomplete": "Please select an occasion, dress code, weather mood and vibe before generating.",
   "combineDressCodeTitle": "Dress code focus",
@@ -302,12 +305,20 @@
   "combineVibeSubtitle": "Define the creative direction of your look.",
   "combineAccessoriesToggle": "Include accessory suggestions",
   "combineBoldColorsToggle": "Allow bold colors",
+  "combinePromptTitle": "Add your own note",
+  "combinePromptSubtitle": "Share extra context, must-use pieces or boundaries.",
+  "combinePromptHint": "e.g. Spotlight cobalt loafers, avoid denim jackets.",
+  "combinePromptHelper": "Leave blank to let VEZU improvise freely.",
   "combineWeatherCardTitle": "Live weather snapshot",
   "combineWeatherCardSubtitle": "Use today’s forecast to inspire your fit.",
   "combineWeatherRefresh": "Refresh",
   "combineDressCasual": "Relaxed casual",
   "combineDressSmart": "Smart casual",
   "combineDressFormal": "Formal",
+  "combineDressSemiFormal": "Semi-formal polish",
+  "combineDressBusiness": "Executive sharp",
+  "combineDressCreative": "Creative statement",
+  "combineDressBlackTie": "Black tie glam",
   "combineWeatherCool": "Cool layers",
   "combineWeatherMild": "Mild & breezy",
   "combineWeatherWarm": "Warm & light",
@@ -317,6 +328,11 @@
   "combineVibeSporty": "Sporty clean",
   "combineVibeStreet": "Street luxe",
   "combineVibeBold": "Bold editorial",
+  "combineVibeRomantic": "Soft romantic",
+  "combineVibeRetro": "Retro future",
+  "combineVibeChill": "Calm & effortless",
+  "combineVibeEdgy": "Edgy structure",
+  "combineVibePlayful": "Playful color pop",
   "combineEventWeekend": "Weekend escape",
   "combineEventBrunch": "Brunch",
   "combineEventWorkshop": "Workshop",
@@ -359,5 +375,4 @@
   "subscriptionGuaranteeFlexible": "Change or cancel whenever you like.",
   "subscriptionFooterNote": "Prices may vary based on local taxes. Purchases are billed through your App Store or Play Store account.",
   "subscriptionSnackComingSoon": "{0} plan flow is coming very soon."
->>>>>>> 53f3ee8f4913e25a77186e615ba45b23fc996650
 }

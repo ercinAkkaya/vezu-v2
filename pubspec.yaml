@@ -43,13 +43,6 @@ dependencies:
   permission_handler: ^11.3.0
   intl: ^0.20.2
   easy_localization: ^3.0.7
-<<<<<<< HEAD
-  firebase_core: ^3.15.2
-  firebase_auth: ^5.3.1
-  cloud_firestore: ^5.5.1
-  firebase_storage: ^12.3.4
-  firebase_messaging: ^15.1.3
-=======
   firebase_core: ^4.2.1
   firebase_auth: ^6.0.0
   cloud_firestore: ^6.0.0
@@ -57,23 +50,18 @@ dependencies:
   firebase_messaging: ^16.0.0
   firebase_app_check: ^0.4.1+2
   carousel_slider: ^5.0.0
->>>>>>> 53f3ee8f4913e25a77186e615ba45b23fc996650
   google_sign_in: ^6.2.1
   shared_preferences: ^2.3.2
   geolocator: ^10.1.0
   flutter_svg: ^2.0.10+1
-<<<<<<< HEAD
-=======
   flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/png/vezu_foreground.png"   # Ön plan (V harfi, askı)
-  adaptive_icon_background: "assets/png/vezu_background.png"  # Arka plan (gradient, doku)
+  image_path: "assets/png/vezu.png"
+  adaptive_icon_background: "#FFFFFF"
 
-
->>>>>>> 53f3ee8f4913e25a77186e615ba45b23fc996650
 
 dev_dependencies:
   flutter_test:

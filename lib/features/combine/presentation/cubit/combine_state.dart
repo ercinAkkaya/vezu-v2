@@ -11,6 +11,7 @@ class CombineState extends Equatable {
       vibe: '',
       includeAccessories: true,
       allowBoldColors: false,
+      customPrompt: '',
     ),
     this.plan,
     this.isGenerating = false,
@@ -45,12 +46,11 @@ class CombineState extends Equatable {
 
   @override
   List<Object?> get props => [
-        isWardrobeLoading,
-        wardrobeItems,
-        preference,
-        plan,
-        isGenerating,
-        errorMessage,
-      ];
+    isWardrobeLoading,
+    wardrobeItems,
+    preference,
+    plan,
+    isGenerating,
+    errorMessage,
+  ];
 }
-

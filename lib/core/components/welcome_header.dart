@@ -42,6 +42,8 @@ class WelcomeHeader extends StatelessWidget {
                 ? Image.network(
                     avatarUrl!,
                     fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
                   )
                 : Center(
                     child: Icon(

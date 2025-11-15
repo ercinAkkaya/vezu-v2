@@ -56,8 +56,9 @@ class _HomeView extends StatelessWidget {
 
                 final weatherSection = _buildWeatherSection(context, state);
 
-                final wardrobeItems =
-                    context.select((AuthCubit cubit) => cubit.state.user);
+                final wardrobeItems = context.select(
+                  (AuthCubit cubit) => cubit.state.user,
+                );
 
                 return RefreshIndicator(
                   onRefresh: context.read<HomeCubit>().refreshWeather,
@@ -91,8 +92,9 @@ class _HomeView extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       EmptyStateCard(
-                        onAction: () => Navigator.of(context)
-                            .pushNamed(AppRoutes.combinationCreate),
+                        onAction: () => Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.combinationCreate),
                       ),
                     ],
                   ),
@@ -144,6 +146,7 @@ class _HomeView extends StatelessWidget {
           location: state.locationLabel ?? 'homeWeatherUnknownLocation'.tr(),
           icon: _iconForCondition(state.weatherCondition),
           isLoading: state.isRefreshing,
+          conditionType: state.weatherCondition,
         );
       case HomeStatus.permissionRequired:
         final permanentlyDenied = state.locationPermissionPermanentlyDenied;
@@ -275,9 +278,12 @@ class _WeatherMessageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return AppSurfaceCard(
-      borderRadius: 24,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -285,44 +291,42 @@ class _WeatherMessageCard extends StatelessWidget {
             children: [
               if (icon != null)
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(16),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    icon,
-                    color: theme.colorScheme.primary,
-                  ),
+                  child: Icon(icon, size: 20, color: theme.colorScheme.primary),
                 ),
-              if (icon != null) const SizedBox(width: 12),
+              if (icon != null) const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   title,
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
             message,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSecondary.withOpacity(0.9),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              height: 1.4,
             ),
           ),
           if (primaryActionLabel != null && onPrimaryAction != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: onPrimaryAction,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(primaryActionLabel!),
@@ -330,15 +334,15 @@ class _WeatherMessageCard extends StatelessWidget {
             ),
           ],
           if (secondaryActionLabel != null && onSecondaryAction != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: onSecondaryAction,
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(secondaryActionLabel!),

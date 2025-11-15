@@ -16,10 +16,10 @@ class CombineCubit extends Cubit<CombineState> {
     required WatchWardrobeItemsUseCase watchWardrobeItemsUseCase,
     required GenerateCombinationUseCase generateCombinationUseCase,
     required AuthCubit authCubit,
-  })  : _watchWardrobeItemsUseCase = watchWardrobeItemsUseCase,
-        _generateCombinationUseCase = generateCombinationUseCase,
-        _authCubit = authCubit,
-        super(const CombineState());
+  }) : _watchWardrobeItemsUseCase = watchWardrobeItemsUseCase,
+       _generateCombinationUseCase = generateCombinationUseCase,
+       _authCubit = authCubit,
+       super(const CombineState());
 
   final WatchWardrobeItemsUseCase _watchWardrobeItemsUseCase;
   final GenerateCombinationUseCase _generateCombinationUseCase;
@@ -39,34 +39,31 @@ class CombineCubit extends Cubit<CombineState> {
     _currentUserId = uid;
     _wardrobeSubscription?.cancel();
     emit(state.copyWith(isWardrobeLoading: true));
-    _wardrobeSubscription = _watchWardrobeItemsUseCase(
-      WatchWardrobeItemsParams(uid: uid),
-    ).listen(
-      (items) {
-        emit(
-          state.copyWith(
-            wardrobeItems: items,
-            isWardrobeLoading: false,
-            resetError: true,
-          ),
+    _wardrobeSubscription =
+        _watchWardrobeItemsUseCase(WatchWardrobeItemsParams(uid: uid)).listen(
+          (items) {
+            emit(
+              state.copyWith(
+                wardrobeItems: items,
+                isWardrobeLoading: false,
+                resetError: true,
+              ),
+            );
+          },
+          onError: (error, stackTrace) {
+            emit(
+              state.copyWith(
+                isWardrobeLoading: false,
+                errorMessage: 'wardrobeLoadError',
+              ),
+            );
+          },
         );
-      },
-      onError: (error, stackTrace) {
-        emit(
-          state.copyWith(
-            isWardrobeLoading: false,
-            errorMessage: 'wardrobeLoadError',
-          ),
-        );
-      },
-    );
   }
 
   void selectOccasion(String occasion) {
     emit(
-      state.copyWith(
-        preference: state.preference.copyWith(occasion: occasion),
-      ),
+      state.copyWith(preference: state.preference.copyWith(occasion: occasion)),
     );
   }
 
@@ -80,18 +77,12 @@ class CombineCubit extends Cubit<CombineState> {
 
   void selectWeather(String weather) {
     emit(
-      state.copyWith(
-        preference: state.preference.copyWith(weather: weather),
-      ),
+      state.copyWith(preference: state.preference.copyWith(weather: weather)),
     );
   }
 
   void selectVibe(String vibe) {
-    emit(
-      state.copyWith(
-        preference: state.preference.copyWith(vibe: vibe),
-      ),
-    );
+    emit(state.copyWith(preference: state.preference.copyWith(vibe: vibe)));
   }
 
   void toggleAccessories(bool value) {
@@ -110,16 +101,20 @@ class CombineCubit extends Cubit<CombineState> {
     );
   }
 
+  void updateCustomPrompt(String prompt) {
+    emit(
+      state.copyWith(
+        preference: state.preference.copyWith(customPrompt: prompt.trim()),
+      ),
+    );
+  }
+
   Future<void> generateCombination() async {
     if (state.isGenerating) {
       return;
     }
     if (state.wardrobeItems.isEmpty) {
-      emit(
-        state.copyWith(
-          errorMessage: 'Garderobunda en az 1 parça olmalı.',
-        ),
-      );
+      emit(state.copyWith(errorMessage: 'Garderobunda en az 1 parça olmalı.'));
       return;
     }
     emit(state.copyWith(isGenerating: true, resetError: true));
@@ -130,19 +125,9 @@ class CombineCubit extends Cubit<CombineState> {
           wardrobeItems: state.wardrobeItems,
         ),
       );
-      emit(
-        state.copyWith(
-          isGenerating: false,
-          plan: plan,
-        ),
-      );
+      emit(state.copyWith(isGenerating: false, plan: plan));
     } on Exception catch (error) {
-      emit(
-        state.copyWith(
-          isGenerating: false,
-          errorMessage: error.toString(),
-        ),
-      );
+      emit(state.copyWith(isGenerating: false, errorMessage: error.toString()));
     }
   }
 
@@ -152,4 +137,3 @@ class CombineCubit extends Cubit<CombineState> {
     return super.close();
   }
 }
-

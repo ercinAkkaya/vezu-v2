@@ -35,7 +35,7 @@ class WardrobeItemCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(32),
         border: Border.all(
           color: theme.colorScheme.primary.withOpacity(0.08),
           width: 0.8,
@@ -56,6 +56,8 @@ class WardrobeItemCard extends StatelessWidget {
             child: Image.network(
               item.imageUrl,
               fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) {
                   return child;

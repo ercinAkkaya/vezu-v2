@@ -8,6 +8,8 @@ class CombinationPreference extends Equatable {
     required this.vibe,
     required this.includeAccessories,
     required this.allowBoldColors,
+    this.customPrompt = '',
+    this.weatherTone,
   });
 
   final String occasion;
@@ -16,6 +18,8 @@ class CombinationPreference extends Equatable {
   final String vibe;
   final bool includeAccessories;
   final bool allowBoldColors;
+  final String customPrompt;
+  final String? weatherTone;
 
   CombinationPreference copyWith({
     String? occasion,
@@ -24,6 +28,8 @@ class CombinationPreference extends Equatable {
     String? vibe,
     bool? includeAccessories,
     bool? allowBoldColors,
+    String? customPrompt,
+    String? weatherTone,
   }) {
     return CombinationPreference(
       occasion: occasion ?? this.occasion,
@@ -32,6 +38,8 @@ class CombinationPreference extends Equatable {
       vibe: vibe ?? this.vibe,
       includeAccessories: includeAccessories ?? this.includeAccessories,
       allowBoldColors: allowBoldColors ?? this.allowBoldColors,
+      customPrompt: customPrompt ?? this.customPrompt,
+      weatherTone: weatherTone ?? this.weatherTone,
     );
   }
 
@@ -43,17 +51,20 @@ class CombinationPreference extends Equatable {
       'vibe': vibe,
       'include_accessories': includeAccessories,
       'allow_bold_colors': allowBoldColors,
+      'custom_prompt': customPrompt,
+      'weather_tone': weatherTone,
     };
   }
 
   @override
   List<Object?> get props => [
-        occasion,
-        dressCode,
-        weather,
-        vibe,
-        includeAccessories,
-        allowBoldColors,
-      ];
+    occasion,
+    dressCode,
+    weather,
+    vibe,
+    includeAccessories,
+    allowBoldColors,
+    customPrompt,
+    weatherTone,
+  ];
 }
-

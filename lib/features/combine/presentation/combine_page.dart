@@ -5,8 +5,8 @@ import 'package:vezu/core/base/base_location_service.dart';
 import 'package:vezu/core/components/app_surface_card.dart';
 import 'package:vezu/core/components/primary_filled_button.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
-import 'package:vezu/features/combination/presentation/components/combination_weather_summary.dart';
 import 'package:vezu/features/combination/presentation/components/combination_selectable_pill.dart';
+import 'package:vezu/core/utils/weather_backdrop.dart';
 import 'package:vezu/features/combine/domain/usecases/generate_combination.dart';
 import 'package:vezu/features/combine/presentation/cubit/combine_cubit.dart';
 import 'package:vezu/features/combine/presentation/widgets/combination_result_view.dart';
@@ -22,10 +22,8 @@ class CombinePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => CombineCubit(
-        watchWardrobeItemsUseCase:
-            context.read<WatchWardrobeItemsUseCase>(),
-        generateCombinationUseCase:
-            context.read<GenerateCombinationUseCase>(),
+        watchWardrobeItemsUseCase: context.read<WatchWardrobeItemsUseCase>(),
+        generateCombinationUseCase: context.read<GenerateCombinationUseCase>(),
         authCubit: context.read<AuthCubit>(),
       )..initialize(),
       child: const _CombineView(),
@@ -38,15 +36,15 @@ class _CombineView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       body: SafeArea(
         child: BlocConsumer<CombineCubit, CombineState>(
           listener: (context, state) {
-            if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.errorMessage!)),
-              );
+            if (state.errorMessage != null &&
+                state.errorMessage!.isNotEmpty) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
             }
           },
           builder: (context, state) {
@@ -56,19 +54,34 @@ class _CombineView extends StatelessWidget {
             };
             return CustomScrollView(
               slivers: [
+                SliverAppBar(
+                  floating: true,
+                  snap: true,
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  elevation: 0,
+                  leading: Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        foregroundColor: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ),
                 SliverPadding(
-                  padding: EdgeInsets.only(
+                  padding: const EdgeInsets.only(
                     left: 20,
                     right: 20,
-                    top: 12,
-                    bottom: 20,
+                    top: 8,
+                    bottom: 28,
                   ),
                   sliver: SliverList.list(
                     children: [
-                      _Header(theme: theme),
-                      const SizedBox(height: 20),
                       const _WeatherOverviewCard(),
-                      const SizedBox(height: 26),
+                      const SizedBox(height: 20),
                       CombinationPreferenceSection(
                         preference: state.preference,
                         onOccasionChanged: cubit.selectOccasion,
@@ -76,8 +89,9 @@ class _CombineView extends StatelessWidget {
                         onVibeChanged: cubit.selectVibe,
                         onAccessoriesChanged: cubit.toggleAccessories,
                         onBoldColorsChanged: cubit.toggleBoldColors,
+                        onPromptChanged: cubit.updateCustomPrompt,
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 24),
                       if (state.isWardrobeLoading)
                         const Center(
                           child: Padding(
@@ -89,10 +103,11 @@ class _CombineView extends StatelessWidget {
                         CombinationResultView(
                           plan: state.plan!,
                           wardrobeMap: wardrobeMap,
+                          preference: state.preference,
                         )
                       else
-                        const _PlaceholderCard(),
-                      const SizedBox(height: 120),
+                        const SizedBox.shrink(),
+                      const SizedBox(height: 80),
                     ],
                   ),
                 ),
@@ -111,7 +126,9 @@ class _CombineView extends StatelessWidget {
               label: state.isGenerating
                   ? 'combinationGenerateLoading'.tr()
                   : 'combinationGenerateCta'.tr(),
-              onPressed: state.isGenerating ? null : () => _onGenerate(context, state, cubit),
+              onPressed: state.isGenerating
+                  ? null
+                  : () => _onGenerate(context, state, cubit),
               isLoading: state.isGenerating,
               minHeight: 58,
             );
@@ -122,11 +139,7 @@ class _CombineView extends StatelessWidget {
   }
 }
 
-void _onGenerate(
-  BuildContext context,
-  CombineState state,
-  CombineCubit cubit,
-) {
+void _onGenerate(BuildContext context, CombineState state, CombineCubit cubit) {
   final preference = state.preference;
   final missing = <String>[];
 
@@ -144,52 +157,13 @@ void _onGenerate(
   }
 
   if (missing.isNotEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('combinePreferenceIncomplete'.tr()),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('combinePreferenceIncomplete'.tr())));
     return;
   }
 
   cubit.generateCombination();
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.theme});
-
-  final ThemeData theme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'combineHeaderTagline'.tr(),
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: Colors.white.withOpacity(0.7),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'combineHeaderTitle'.tr(),
-          style: theme.textTheme.displaySmall?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'combineHeaderDescription'.tr(),
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: Colors.white.withOpacity(0.7),
-            height: 1.4,
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 const Duration _weatherCacheTtl = Duration(minutes: 30);
@@ -204,6 +178,7 @@ class _WeatherSnapshot {
     required this.conditionLabel,
     required this.location,
     required this.fetchedAt,
+    required this.condition,
   });
 
   final String temperature;
@@ -213,6 +188,7 @@ class _WeatherSnapshot {
   final String conditionLabel;
   final String? location;
   final DateTime fetchedAt;
+  final WeatherCondition condition;
 }
 
 class _WeatherOverviewCard extends StatefulWidget {
@@ -234,6 +210,7 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
   String? _error;
   String? _manualSeason;
   _WeatherSnapshot? _latestSnapshot;
+  WeatherCondition? _conditionKind;
 
   static const _seasonOptions = [
     _SeasonOption(labelKey: 'combinationSeasonSpring', value: 'spring'),
@@ -285,6 +262,7 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
         conditionLabel: _mapCondition(weather.condition).tr(),
         location: weather.locationName,
         fetchedAt: DateTime.now(),
+        condition: weather.condition,
       );
 
       _cachedWeatherSnapshot = snapshot;
@@ -318,70 +296,70 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
       _manualSeason = state.preference.weather;
     }
 
-    return AppSurfaceCard(
-      borderRadius: 34,
-      padding: const EdgeInsets.all(22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'combineWeatherCardTitle'.tr(),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'combineWeatherCardTitle'.tr(),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'combineWeatherCardSubtitle'.tr(),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'combineWeatherCardSubtitle'.tr(),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSecondary,
-                      ),
+                  ),
+                  const SizedBox(width: 8),
+                  Transform.scale(
+                    scale: 0.85,
+                    child: Switch.adaptive(
+                      value: _useLiveWeather,
+                      onChanged: (value) => _toggleLiveWeather(value),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Switch.adaptive(
-                value: _useLiveWeather,
-                onChanged: (value) => _toggleLiveWeather(value),
+              const SizedBox(height: 16),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 280),
+                child: _useLiveWeather
+                    ? _buildLiveWeatherPanel(theme)
+                    : _buildSeasonPicker(context),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 260),
-            child: _useLiveWeather
-                ? Column(
-                    key: const ValueKey('live'),
-                    children: [
-                      CombinationWeatherSummary(
-                        temperature: _temperature,
-                        humidity: _humidity,
-                        wind: _wind,
-                        condition: _condition,
-                        location: _location,
-                        loading: _isLoading,
-                        errorText: _error,
-                      ),
-                      const SizedBox(height: 10),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton.icon(
-                          onPressed: () => _loadWeather(force: true),
-                          icon: const Icon(Icons.refresh_rounded),
-                          label: Text('combineWeatherRefresh'.tr()),
-                        ),
-                      ),
-                    ],
-                  )
-                : _buildSeasonPicker(context),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -394,6 +372,7 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
     _wind = snapshot.wind;
     _condition = snapshot.conditionLabel;
     _location = snapshot.location;
+    _conditionKind = snapshot.condition;
   }
 
   bool _isCacheExpired(_WeatherSnapshot snapshot) {
@@ -401,7 +380,9 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
   }
 
   String _formatWind(double value) {
-    final rounded = value >= 10 ? value.round().toString() : value.toStringAsFixed(1);
+    final rounded = value >= 10
+        ? value.round().toString()
+        : value.toStringAsFixed(1);
     return '$rounded km/h';
   }
 
@@ -444,24 +425,25 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
       children: [
         Text(
           'combineSeasonManualTitle'.tr(),
-          style: theme.textTheme.titleMedium?.copyWith(
+          style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w700,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 8,
+          runSpacing: 8,
           children: _seasonOptions
               .map(
                 (option) => CombinationSelectablePill(
                   label: option.labelKey.tr(),
-                  isSelected: _manualSeason == option?.value,
+                  isSelected: _manualSeason == option.value,
                   onTap: () {
                     setState(() {
-                      _manualSeason = option?.value;
+                      _manualSeason = option.value;
                     });
-                    final season = option?.value ?? '';
+                    final season = option.value;
                     context.read<CombineCubit>().selectWeather(season);
                   },
                 ),
@@ -469,11 +451,141 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
               .toList(),
         ),
         const SizedBox(height: 10),
-        Text(
-          'combineSeasonManualHint'.tr(),
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSecondary,
-            height: 1.3,
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: theme.colorScheme.primary.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 16,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'combineSeasonManualHint'.tr(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                    height: 1.3,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLiveWeatherPanel(ThemeData theme) {
+    if (_isLoading) {
+      return const _WeatherStateBanner.loading(
+        key: ValueKey('weather-loading'),
+      );
+    }
+    if (_error != null) {
+      return _WeatherStateBanner.error(
+        key: const ValueKey('weather-error'),
+        message: _error!,
+      );
+    }
+    final inferredMood = _temperatureValue != null
+        ? _inferWeatherMood(_temperatureValue!)
+        : null;
+    return Column(
+      key: const ValueKey('weather-ready'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _TemperatureOrb(value: _temperature),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _condition ?? 'weatherConditionUnknown'.tr(),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (_location != null && _location!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 12,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            _location!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      if (_humidity != null)
+                        _WeatherMetricPill(
+                          icon: Icons.water_drop_outlined,
+                          label: 'homeWeatherHumidity'.tr(),
+                          value: _humidity!,
+                        ),
+                      if (_wind != null)
+                        _WeatherMetricPill(
+                          icon: Icons.air_rounded,
+                          label: 'homeWeatherWind'.tr(),
+                          value: _wind!,
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _WeatherMoodGauge(activeMood: inferredMood),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: () => _loadWeather(force: true),
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: Text(
+              'combineWeatherRefresh'.tr(),
+              style: const TextStyle(fontSize: 13),
+            ),
+            style: TextButton.styleFrom(
+              foregroundColor: theme.colorScheme.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
         ),
       ],
@@ -511,6 +623,23 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
     }
     return 'warm';
   }
+
+  String? _activeMoodHint(CombineState state) {
+    if (_useLiveWeather && _latestSnapshot != null) {
+      return _inferWeatherMood(_latestSnapshot!.temperatureValue);
+    }
+    if (state.preference.weatherTone != null &&
+        state.preference.weatherTone!.isNotEmpty) {
+      return state.preference.weatherTone;
+    }
+    if (_manualSeason != null && _manualSeason!.isNotEmpty) {
+      return _manualSeason;
+    }
+    if (state.preference.weather.isNotEmpty) {
+      return state.preference.weather;
+    }
+    return null;
+  }
 }
 
 class _SeasonOption {
@@ -519,49 +648,225 @@ class _SeasonOption {
   final String labelKey;
   final String value;
 }
-class _PlaceholderCard extends StatelessWidget {
-  const _PlaceholderCard();
+
+class _WeatherStateBanner extends StatelessWidget {
+  const _WeatherStateBanner.loading({super.key})
+    : message = null,
+      isError = false;
+
+  const _WeatherStateBanner.error({super.key, required this.message})
+    : isError = true;
+
+  final String? message;
+  final bool isError;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return AppSurfaceCard(
-      borderRadius: 28,
-      padding: const EdgeInsets.all(24),
-      backgroundColor: Colors.white.withOpacity(0.03),
-      borderColor: Colors.white.withOpacity(0.06),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    if (!isError) {
+      return Container(
+        height: 80,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: theme.colorScheme.surfaceContainerHigh,
+          border: Border.all(
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+          ),
+        ),
+        alignment: Alignment.center,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: theme.colorScheme.primary,
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: theme.colorScheme.errorContainer,
+        border: Border.all(
+          color: theme.colorScheme.error.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
         children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            alignment: Alignment.center,
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
+          Icon(
+            Icons.error_outline,
+            color: theme.colorScheme.error,
+            size: 20,
           ),
-          const SizedBox(height: 16),
-          Text(
-            'combinePlaceholderTitle'.tr(),
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message ?? '',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onErrorContainer,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'combinePlaceholderSubtitle'.tr(),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.white.withOpacity(0.7),
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 18),
         ],
       ),
     );
   }
+}
+
+class _WeatherMetricPill extends StatelessWidget {
+  const _WeatherMetricPill({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$label · $value',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TemperatureOrb extends StatelessWidget {
+  const _TemperatureOrb({this.value});
+
+  final String? value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: 70,
+      height: 70,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primaryContainer,
+            theme.colorScheme.primary.withValues(alpha: 0.3),
+          ],
+        ),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        value ?? '--',
+        style: theme.textTheme.headlineMedium?.copyWith(
+          color: theme.colorScheme.onPrimaryContainer,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -1,
+        ),
+      ),
+    );
+  }
+}
+
+class _WeatherMoodGauge extends StatelessWidget {
+  const _WeatherMoodGauge({this.activeMood});
+
+  final String? activeMood;
+
+  static const _moods = [
+    _MoodChip(labelKey: 'combineWeatherCool', value: 'cool'),
+    _MoodChip(labelKey: 'combineWeatherMild', value: 'mild'),
+    _MoodChip(labelKey: 'combineWeatherWarm', value: 'warm'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(3),
+      child: Row(
+        children: _moods
+            .map(
+              (mood) => Expanded(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(9),
+                    color: activeMood == mood.value
+                        ? theme.colorScheme.primary
+                        : Colors.transparent,
+                  ),
+                  child: Text(
+                    mood.labelKey.tr(),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: activeMood == mood.value
+                          ? theme.colorScheme.onPrimary
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      fontWeight: activeMood == mood.value
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _MoodChip {
+  const _MoodChip({required this.labelKey, required this.value});
+
+  final String labelKey;
+  final String value;
 }
