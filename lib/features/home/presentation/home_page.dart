@@ -60,41 +60,68 @@ class _HomeView extends StatelessWidget {
                   (AuthCubit cubit) => cubit.state.user,
                 );
 
+                final hasWardrobeItems =
+                    (wardrobeItems?.totalClothes ?? 0) > 0;
+                final horizontalPaddingValue =
+                    horizontalPadding.clamp(16.0, 32.0);
+                final verticalPaddingValue =
+                    verticalPadding.clamp(12.0, 24.0);
+
                 return RefreshIndicator(
                   onRefresh: context.read<HomeCubit>().refreshWeather,
                   child: ListView(
                     padding: EdgeInsets.symmetric(
-                      horizontal: horizontalPadding.clamp(16, 32),
-                      vertical: verticalPadding.clamp(12, 24),
+                      vertical: verticalPaddingValue,
                     ),
                     children: [
-                      WelcomeHeader(
-                        userName: displayName,
-                        avatarUrl: avatarUrl,
-                      ),
-                      const SizedBox(height: 20),
-                      weatherSection,
-                      const SizedBox(height: 24),
-                      if ((wardrobeItems?.totalClothes ?? 0) > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          child: WardrobeItemCarousel(
-                            title: 'homeWardrobeSpotlight'.tr(),
-                            onSeeAll: () =>
-                                context.read<BottomNavCubit>().setIndex(1),
-                          ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPaddingValue,
                         ),
-                      Text(
-                        'homeEmptySectionTitle'.tr(),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            WelcomeHeader(
+                              userName: displayName,
+                              avatarUrl: avatarUrl,
+                            ),
+                            const SizedBox(height: 20),
+                            weatherSection,
+                            const SizedBox(height: 24),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      EmptyStateCard(
-                        onAction: () => Navigator.of(
-                          context,
-                        ).pushNamed(AppRoutes.combinationCreate),
+                      if (hasWardrobeItems) ...[
+                        WardrobeItemCarousel(
+                          title: 'homeWardrobeSpotlight'.tr(),
+                          horizontalPadding: horizontalPaddingValue,
+                          onSeeAll: () =>
+                              context.read<BottomNavCubit>().setIndex(1),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPaddingValue,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!hasWardrobeItems) const SizedBox(height: 24),
+                            Text(
+                              'homeEmptySectionTitle'.tr(),
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            EmptyStateCard(
+                              onAction: () => Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.combinationCreate),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

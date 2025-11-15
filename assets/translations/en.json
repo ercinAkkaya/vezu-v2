@@ -382,5 +382,8 @@
   "subscriptionGuaranteeUpdates": "New premium tools roll out to Pro plans automatically.",
   "subscriptionGuaranteeFlexible": "Change or cancel whenever you like.",
   "subscriptionFooterNote": "Prices may vary based on local taxes. Purchases are billed through your App Store or Play Store account.",
-  "subscriptionSnackComingSoon": "{0} plan flow is coming very soon."
+  "subscriptionSnackComingSoon": "{0} plan flow is coming very soon.",
+  "splashFeatureAiCombos": "AI outfit ideas",
+  "splashFeatureSmartWardrobe": "Smart wardrobe",
+  "splashFeatureStyleTips": "Style insights"
 }

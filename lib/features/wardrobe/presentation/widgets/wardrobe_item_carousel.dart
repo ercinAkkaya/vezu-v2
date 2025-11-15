@@ -14,10 +14,12 @@ class WardrobeItemCarousel extends StatefulWidget {
     super.key,
     required this.title,
     this.onSeeAll,
+    this.horizontalPadding = 20,
   });
 
   final String title;
   final VoidCallback? onSeeAll;
+  final double horizontalPadding;
 
   @override
   State<WardrobeItemCarousel> createState() => _WardrobeItemCarouselState();
@@ -123,24 +125,32 @@ class _WardrobeItemCarouselState extends State<WardrobeItemCarousel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                widget.title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  if (widget.onSeeAll != null)
+                    TextButton(
+                      onPressed: widget.onSeeAll,
+                      child: Text('homeSeeAllWardrobe'.tr()),
+                    ),
+                ],
               ),
-            ),
-            if (widget.onSeeAll != null)
-              TextButton(
-                onPressed: widget.onSeeAll,
-                child: Text('homeSeeAllWardrobe'.tr()),
-              ),
-          ],
+              const SizedBox(height: 12),
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
         SizedBox(
           height: 160,
           child: ListView.separated(
