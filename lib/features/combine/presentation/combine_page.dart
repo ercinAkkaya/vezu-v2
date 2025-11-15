@@ -52,65 +52,74 @@ class _CombineView extends StatelessWidget {
             final wardrobeMap = {
               for (final item in state.wardrobeItems) item.id: item,
             };
-            return CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  floating: true,
-                  snap: true,
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  elevation: 0,
-                  leading: Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded),
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        foregroundColor: Theme.of(context).colorScheme.onSurface,
+            return Stack(
+              children: [
+                CustomScrollView(
+                  slivers: [
+                    SliverAppBar(
+                      floating: true,
+                      snap: true,
+                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                      elevation: 0,
+                      leading: Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_rounded),
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: IconButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surfaceContainerHighest,
+                            foregroundColor: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    top: 8,
-                    bottom: 28,
-                  ),
-                  sliver: SliverList.list(
-                    children: [
-                      const _WeatherOverviewCard(),
-                      const SizedBox(height: 20),
-                      CombinationPreferenceSection(
-                        preference: state.preference,
-                        onOccasionChanged: cubit.selectOccasion,
-                        onDressCodeChanged: cubit.selectDressCode,
-                        onVibeChanged: cubit.selectVibe,
-                        onAccessoriesChanged: cubit.toggleAccessories,
-                        onBoldColorsChanged: cubit.toggleBoldColors,
-                        onPromptChanged: cubit.updateCustomPrompt,
+                    SliverPadding(
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 8,
+                        bottom: 28,
                       ),
-                      const SizedBox(height: 24),
-                      if (state.isWardrobeLoading)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(32),
-                            child: CircularProgressIndicator(),
+                      sliver: SliverList.list(
+                        children: [
+                          const _WeatherOverviewCard(),
+                          const SizedBox(height: 20),
+                          CombinationPreferenceSection(
+                            preference: state.preference,
+                            onOccasionChanged: cubit.selectOccasion,
+                            onDressCodeChanged: cubit.selectDressCode,
+                            onVibeChanged: cubit.selectVibe,
+                            onAccessoriesChanged: cubit.toggleAccessories,
+                            onBoldColorsChanged: cubit.toggleBoldColors,
+                            onPromptChanged: cubit.updateCustomPrompt,
                           ),
-                        )
-                      else if (state.plan != null)
-                        CombinationResultView(
-                          plan: state.plan!,
-                          wardrobeMap: wardrobeMap,
-                          preference: state.preference,
-                        )
-                      else
-                        const SizedBox.shrink(),
-                      const SizedBox(height: 80),
-                    ],
-                  ),
+                          const SizedBox(height: 24),
+                          if (state.isWardrobeLoading)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(32),
+                                child: CircularProgressIndicator(),
+                              ),
+                            )
+                          else if (state.plan != null)
+                            CombinationResultView(
+                              plan: state.plan!,
+                              wardrobeMap: wardrobeMap,
+                              preference: state.preference,
+                              onSave: () => _onSavePlan(context),
+                              isSaving: state.isSavingPlan,
+                              hasSaved: state.hasSavedPlan,
+                            )
+                          else
+                            const SizedBox.shrink(),
+                          const SizedBox(height: 80),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+                if (state.isGenerating) const _GeneratingOverlay(),
               ],
             );
           },
@@ -164,6 +173,81 @@ void _onGenerate(BuildContext context, CombineState state, CombineCubit cubit) {
   }
 
   cubit.generateCombination();
+}
+
+Future<void> _onSavePlan(BuildContext context) async {
+  final cubit = context.read<CombineCubit>();
+  final success = await cubit.saveCurrentPlan();
+  if (!context.mounted) return;
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        success ? 'combineSaveSuccess'.tr() : 'combineSaveError'.tr(),
+      ),
+    ),
+  );
+}
+
+class _GeneratingOverlay extends StatelessWidget {
+  const _GeneratingOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return IgnorePointer(
+      ignoring: false,
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.45),
+        alignment: Alignment.center,
+        child: Container(
+          width: 280,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: CircularProgressIndicator(
+                  strokeWidth: 4,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'combineGeneratingTitle'.tr(),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'combineGeneratingSubtitle'.tr(),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 const Duration _weatherCacheTtl = Duration(minutes: 30);

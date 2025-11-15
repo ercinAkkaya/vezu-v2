@@ -11,57 +11,54 @@ class CombinationResultView extends StatelessWidget {
     required this.plan,
     required this.wardrobeMap,
     required this.preference,
+    this.onSave,
+    this.isSaving = false,
+    this.hasSaved = false,
   });
 
   final CombinationPlan plan;
   final Map<String, ClothingItem> wardrobeMap;
   final CombinationPreference preference;
+  final VoidCallback? onSave;
+  final bool isSaving;
+  final bool hasSaved;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _PlanHeroCard(plan: plan, preference: preference),
-        const SizedBox(height: 18),
-        _PlanInsightRow(plan: plan, preference: preference),
-        const SizedBox(height: 24),
-        ...plan.items.asMap().entries.map(
-          (entry) => Padding(
-            padding: const EdgeInsets.only(bottom: 18),
-            child: _CombinationItemCard(
-              item: entry.value,
-              clothingItem: wardrobeMap[entry.value.wardrobeItemId],
-              position: entry.key + 1,
-            ),
-          ),
+        _PlanHeroCard(
+          plan: plan,
+          preference: preference,
+          onSave: onSave,
+          isSaving: isSaving,
+          hasSaved: hasSaved,
         ),
-        if (plan.stylingNotes.isNotEmpty)
-          _InsightListSection(
-            title: 'combineStylingNotes'.tr(),
-            items: plan.stylingNotes,
-          ),
-        if (plan.accessories.isNotEmpty)
-          _InsightListSection(
-            title: 'combineAccessoryNotes'.tr(),
-            items: plan.accessories,
-          ),
-        if (plan.warnings.isNotEmpty)
-          _InsightListSection(
-            title: 'combineWarnings'.tr(),
-            items: plan.warnings,
-            accentIcon: Icons.warning_amber_rounded,
-          ),
+        const SizedBox(height: 2),
+        _CombinationItemsGalleryCard(
+          plan: plan,
+          wardrobeMap: wardrobeMap,
+        ),
       ],
     );
   }
 }
 
 class _PlanHeroCard extends StatelessWidget {
-  const _PlanHeroCard({required this.plan, required this.preference});
+  const _PlanHeroCard({
+    required this.plan,
+    required this.preference,
+    this.onSave,
+    this.isSaving = false,
+    this.hasSaved = false,
+  });
 
   final CombinationPlan plan;
   final CombinationPreference preference;
+  final VoidCallback? onSave;
+  final bool isSaving;
+  final bool hasSaved;
 
   @override
   Widget build(BuildContext context) {
@@ -106,25 +103,52 @@ class _PlanHeroCard extends StatelessWidget {
       ),
     ]..removeWhere((chip) => chip == null);
 
-    return AppSurfaceCard(
-      borderRadius: 32,
-      padding: const EdgeInsets.all(26),
-      gradient: const LinearGradient(
-        colors: [Color(0xFF151515), Color(0xFF080808)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+    final themeLabel = _localizedTheme(context, plan.theme, preference.vibe);
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF151515), Color(0xFF080808)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+          left: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+          right: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
-      borderColor: Colors.white.withValues(alpha: 0.08),
+      padding: const EdgeInsets.all(26),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            plan.theme,
-            style: theme.textTheme.displaySmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              letterSpacing: -0.4,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  themeLabel,
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+              ),
+              if (onSave != null)
+                _SaveIconButton(
+                  onPressed: onSave!,
+                  isSaving: isSaving,
+                  isSaved: hasSaved,
+                ),
+            ],
           ),
           const SizedBox(height: 12),
           Text(
@@ -175,76 +199,6 @@ class _PlanHeroCard extends StatelessWidget {
       return null;
     }
     return _PlanMetaChip(icon: icon, label: label, value: value);
-  }
-}
-
-class _PlanInsightRow extends StatelessWidget {
-  const _PlanInsightRow({required this.plan, required this.preference});
-
-  final CombinationPlan plan;
-  final CombinationPreference preference;
-
-  @override
-  Widget build(BuildContext context) {
-    final baseAccessoryLabel = preference.includeAccessories
-        ? 'combineResultAccessoriesOn'.tr()
-        : 'combineResultAccessoriesOff'.tr();
-    final accessoriesLabel = plan.accessories.isEmpty
-        ? baseAccessoryLabel
-        : 'combineAccessorySingle'.tr(
-            args: [plan.accessories.take(1).join(', ')],
-          );
-    final warningLabel = plan.warnings.isEmpty
-        ? 'combineWarningNone'.tr()
-        : plan.warnings.first;
-    final colorLabel = preference.allowBoldColors
-        ? 'combineResultBoldColorsOn'.tr()
-        : 'combineResultBoldColorsOff'.tr();
-
-    return Wrap(
-      spacing: 12,
-      runSpacing: 8,
-      children: [
-        _PlanInsightChip(icon: Icons.auto_awesome_outlined, label: plan.mood),
-        _PlanInsightChip(icon: Icons.diamond_outlined, label: accessoriesLabel),
-        _PlanInsightChip(icon: Icons.palette_outlined, label: colorLabel),
-        _PlanInsightChip(
-          icon: Icons.warning_amber_outlined,
-          label: warningLabel,
-        ),
-      ],
-    );
-  }
-}
-
-class _PlanInsightChip extends StatelessWidget {
-  const _PlanInsightChip({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-        color: Colors.white.withValues(alpha: 0.03),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: Colors.white),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(color: Colors.white),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -300,162 +254,52 @@ class _PlanMetaChip extends StatelessWidget {
   }
 }
 
-class _InsightListSection extends StatelessWidget {
-  const _InsightListSection({
-    required this.title,
-    required this.items,
-    this.accentIcon,
+class _CombinationItemsGalleryCard extends StatelessWidget {
+  const _CombinationItemsGalleryCard({
+    required this.plan,
+    required this.wardrobeMap,
   });
 
-  final String title;
-  final List<String> items;
-  final IconData? accentIcon;
+  final CombinationPlan plan;
+  final Map<String, ClothingItem> wardrobeMap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: 18),
-      child: AppSurfaceCard(
-        borderRadius: 32,
-        padding: const EdgeInsets.all(22),
-        backgroundColor: Colors.white.withValues(alpha: 0.03),
-        borderColor: Colors.white.withValues(alpha: 0.08),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (accentIcon != null) ...[
-                  Icon(accentIcon, color: Colors.white, size: 18),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  title,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ...items.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      margin: const EdgeInsets.only(top: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        item,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+    final galleryTiles = plan.items
+        .map(
+          (item) => _GalleryItemTile(
+            imageUrl: wardrobeMap[item.wardrobeItemId]?.imageUrl,
+          ),
+        )
+        .toList();
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+        border: Border(
+          left: BorderSide(color: Colors.black.withValues(alpha: 0.5), width: 1.5),
+          right: BorderSide(color: Colors.black.withValues(alpha: 0.5), width: 1.5),
+          bottom: BorderSide(color: Colors.black.withValues(alpha: 0.5), width: 1.5),
         ),
       ),
-    );
-  }
-}
-
-class _CombinationItemCard extends StatelessWidget {
-  const _CombinationItemCard({
-    required this.item,
-    required this.clothingItem,
-    required this.position,
-  });
-
-  final CombinationPlanItem item;
-  final ClothingItem? clothingItem;
-  final int position;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final imageUrl = clothingItem?.imageUrl;
-    final category = clothingItem?.category ?? item.slot;
-    return AppSurfaceCard(
-      borderRadius: 32,
-      padding: const EdgeInsets.all(18),
-      backgroundColor: Colors.white.withValues(alpha: 0.02),
-      borderColor: Colors.white.withValues(alpha: 0.08),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(26, 20, 26, 24),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              _ItemPreview(imageUrl: imageUrl),
-              Positioned(
-                top: 6,
-                left: 6,
-                child: _ItemIndexBadge(index: position),
-              ),
-            ],
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.nickname,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    _CategoryPill(label: category),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  item.pairingReason,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.78),
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  item.stylingTip,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.6),
-                  ),
-                ),
-                if (item.accent != null && item.accent!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    'combineAccentLabel'.tr(args: [item.accent!]),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
-              ],
+          Text(
+            'combineResultPieces'.tr(),
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
             ),
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 14,
+            runSpacing: 14,
+            children: galleryTiles,
           ),
         ],
       ),
@@ -463,87 +307,92 @@ class _CombinationItemCard extends StatelessWidget {
   }
 }
 
-class _ItemPreview extends StatelessWidget {
-  const _ItemPreview({this.imageUrl});
+class _GalleryItemTile extends StatelessWidget {
+  const _GalleryItemTile({this.imageUrl});
 
   final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrl == null || imageUrl!.isEmpty) {
-      return Container(
-        width: 92,
-        height: 92,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(26),
-        ),
-        alignment: Alignment.center,
-        child: Icon(
-          Icons.image_not_supported_outlined,
-          color: Colors.white.withValues(alpha: 0.5),
-          size: 24,
-        ),
-      );
-    }
-
-    return ClipRRect(
+    final placeholderColor = Colors.white.withValues(alpha: 0.08);
+    final child = ClipRRect(
       borderRadius: BorderRadius.circular(26),
-      child: Image.network(
-        imageUrl!,
-        width: 92,
-        height: 92,
-        fit: BoxFit.cover,
+      child: AspectRatio(
+        aspectRatio: 3 / 4,
+        child: imageUrl == null || imageUrl!.isEmpty
+            ? Container(
+                color: placeholderColor,
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.image_outlined,
+                  color: Colors.white.withValues(alpha: 0.5),
+                  size: 28,
+                ),
+              )
+            : Image.network(
+                imageUrl!,
+                fit: BoxFit.cover,
+              ),
       ),
+    );
+    return SizedBox(
+      width: 100,
+      child: child,
     );
   }
 }
 
-class _ItemIndexBadge extends StatelessWidget {
-  const _ItemIndexBadge({required this.index});
+class _SaveIconButton extends StatelessWidget {
+  const _SaveIconButton({
+    required this.onPressed,
+    required this.isSaving,
+    required this.isSaved,
+  });
 
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.black.withValues(alpha: 0.6),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
-      ),
-      child: Text(
-        index.toString().padLeft(2, '0'),
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryPill extends StatelessWidget {
-  const _CategoryPill({required this.label});
-
-  final String label;
+  final VoidCallback onPressed;
+  final bool isSaving;
+  final bool isSaved;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        color: Colors.white.withValues(alpha: 0.04),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: Colors.white.withValues(alpha: 0.9),
-          letterSpacing: 0.4,
+    final background = isSaved
+        ? theme.colorScheme.secondaryContainer
+        : Colors.white.withValues(alpha: 0.15);
+    final iconColor =
+        isSaved ? theme.colorScheme.onSecondaryContainer : Colors.white;
+    return Tooltip(
+      message: isSaved
+          ? 'combineSaveButton'.tr()
+          : 'combineSaveButton'.tr(),
+      child: InkResponse(
+        onTap: isSaving ? null : onPressed,
+        radius: 24,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: background,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.25),
+              width: 1,
+            ),
+          ),
+          child: isSaving
+              ? SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: iconColor,
+                  ),
+                )
+              : Icon(
+                  isSaved ? Icons.bookmark_added_rounded : Icons.bookmark_add_outlined,
+                  color: iconColor,
+                  size: 20,
+                ),
         ),
       ),
     );
@@ -613,3 +462,32 @@ const Map<String, String> _weatherLabelKeys = {
   'autumn': 'combinationSeasonAutumn',
   'winter': 'combinationSeasonWinter',
 };
+
+const Map<String, String> _themeLabelKeys = {
+  'retro_futurism_fusion': 'combineThemeRetroFuturismFusion',
+};
+
+String _localizedTheme(
+  BuildContext context,
+  String theme,
+  String vibeKey,
+) {
+  final normalized = _normalizeTheme(theme);
+  final themeKey = _themeLabelKeys[normalized];
+  if (themeKey != null) {
+    return themeKey.tr(context: context);
+  }
+  final vibeTranslation = _vibeLabelKeys[vibeKey];
+  if (vibeTranslation != null) {
+    return vibeTranslation.tr(context: context);
+  }
+  return theme;
+}
+
+String _normalizeTheme(String value) {
+  return value
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+      .replaceAll(RegExp(r'_+'), '_')
+      .replaceAll(RegExp(r'^_|_$'), '');
+}

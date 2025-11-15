@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:vezu/features/combine/domain/entities/combination_plan.dart';
@@ -16,14 +17,17 @@ class CombineCubit extends Cubit<CombineState> {
     required WatchWardrobeItemsUseCase watchWardrobeItemsUseCase,
     required GenerateCombinationUseCase generateCombinationUseCase,
     required AuthCubit authCubit,
+    FirebaseFirestore? firestore,
   }) : _watchWardrobeItemsUseCase = watchWardrobeItemsUseCase,
        _generateCombinationUseCase = generateCombinationUseCase,
        _authCubit = authCubit,
+       _firestore = firestore ?? FirebaseFirestore.instance,
        super(const CombineState());
 
   final WatchWardrobeItemsUseCase _watchWardrobeItemsUseCase;
   final GenerateCombinationUseCase _generateCombinationUseCase;
   final AuthCubit _authCubit;
+  final FirebaseFirestore _firestore;
 
   StreamSubscription<List<ClothingItem>>? _wardrobeSubscription;
   String? _currentUserId;
@@ -125,7 +129,13 @@ class CombineCubit extends Cubit<CombineState> {
           wardrobeItems: state.wardrobeItems,
         ),
       );
-      emit(state.copyWith(isGenerating: false, plan: plan));
+      emit(
+        state.copyWith(
+          isGenerating: false,
+          plan: plan,
+          hasSavedPlan: false,
+        ),
+      );
     } on Exception catch (error) {
       emit(state.copyWith(isGenerating: false, errorMessage: error.toString()));
     }
@@ -136,4 +146,64 @@ class CombineCubit extends Cubit<CombineState> {
     _wardrobeSubscription?.cancel();
     return super.close();
   }
+
+  Future<bool> saveCurrentPlan() async {
+    final plan = state.plan;
+    final userId = _authCubit.state.user?.id;
+    if (plan == null || userId == null) {
+      return false;
+    }
+    final wardrobeLookup = {
+      for (final item in state.wardrobeItems) item.id: item,
+    };
+    emit(state.copyWith(isSavingPlan: true));
+    try {
+      final docRef = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('saved_combinations')
+          .doc();
+      await docRef.set({
+        'id': docRef.id,
+        'theme': plan.theme,
+        'theme_key': _normalizeKey(plan.theme),
+        'mood': plan.mood,
+        'summary': plan.summary,
+        'styling_notes': plan.stylingNotes,
+        'accessories': plan.accessories,
+        'warnings': plan.warnings,
+        'preference': state.preference.toMap(),
+        'created_at': FieldValue.serverTimestamp(),
+        'items': plan.items
+            .map(
+              (item) => {
+                'wardrobe_item_id': item.wardrobeItemId,
+                'slot': item.slot,
+                'nickname': item.nickname,
+                'pairing_reason': item.pairingReason,
+                'styling_tip': item.stylingTip,
+                'accent': item.accent,
+                'image_url': wardrobeLookup[item.wardrobeItemId]?.imageUrl,
+                'category': wardrobeLookup[item.wardrobeItemId]?.category ??
+                    item.slot,
+              },
+            )
+            .toList(),
+      });
+      emit(state.copyWith(isSavingPlan: false, hasSavedPlan: true));
+      return true;
+    } catch (_) {
+      emit(state.copyWith(isSavingPlan: false));
+      return false;
+    }
+  }
+}
+
+String _normalizeKey(String value) {
+  return value
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+      .replaceAll(RegExp(r'_+'), '_')
+      .trim()
+      .replaceAll(RegExp(r'^_|_$'), '');
 }

@@ -15,6 +15,8 @@ class CombineState extends Equatable {
     ),
     this.plan,
     this.isGenerating = false,
+    this.isSavingPlan = false,
+    this.hasSavedPlan = false,
     this.errorMessage,
   });
 
@@ -23,6 +25,8 @@ class CombineState extends Equatable {
   final CombinationPreference preference;
   final CombinationPlan? plan;
   final bool isGenerating;
+  final bool isSavingPlan;
+  final bool hasSavedPlan;
   final String? errorMessage;
 
   CombineState copyWith({
@@ -31,6 +35,8 @@ class CombineState extends Equatable {
     CombinationPreference? preference,
     CombinationPlan? plan,
     bool? isGenerating,
+    bool? isSavingPlan,
+    bool? hasSavedPlan,
     String? errorMessage,
     bool resetError = false,
   }) {
@@ -40,6 +46,8 @@ class CombineState extends Equatable {
       preference: preference ?? this.preference,
       plan: plan ?? this.plan,
       isGenerating: isGenerating ?? this.isGenerating,
+      isSavingPlan: isSavingPlan ?? this.isSavingPlan,
+      hasSavedPlan: hasSavedPlan ?? this.hasSavedPlan,
       errorMessage: resetError ? null : (errorMessage ?? this.errorMessage),
     );
   }
@@ -51,6 +59,8 @@ class CombineState extends Equatable {
     preference,
     plan,
     isGenerating,
+    isSavingPlan,
+    hasSavedPlan,
     errorMessage,
   ];
 }
