@@ -8,6 +8,8 @@ import "package:vezu/core/components/app_surface_card.dart";
 import "package:vezu/core/components/empty_state_card.dart";
 import "package:vezu/core/components/weather_summary_card.dart";
 import "package:vezu/core/components/welcome_header.dart";
+import "package:vezu/core/navigation/app_router.dart";
+import "package:vezu/features/wardrobe/presentation/widgets/wardrobe_item_carousel.dart";
 import "package:vezu/features/auth/domain/entities/user_entity.dart";
 import "package:vezu/features/auth/presentation/cubit/auth_cubit.dart";
 import "package:vezu/features/shell/presentation/cubit/bottom_nav_cubit.dart";
@@ -54,6 +56,9 @@ class _HomeView extends StatelessWidget {
 
                 final weatherSection = _buildWeatherSection(context, state);
 
+                final wardrobeItems =
+                    context.select((AuthCubit cubit) => cubit.state.user);
+
                 return RefreshIndicator(
                   onRefresh: context.read<HomeCubit>().refreshWeather,
                   child: ListView(
@@ -66,9 +71,18 @@ class _HomeView extends StatelessWidget {
                         userName: displayName,
                         avatarUrl: avatarUrl,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       weatherSection,
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
+                      if ((wardrobeItems?.totalClothes ?? 0) > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: WardrobeItemCarousel(
+                            title: 'homeWardrobeSpotlight'.tr(),
+                            onSeeAll: () =>
+                                context.read<BottomNavCubit>().setIndex(1),
+                          ),
+                        ),
                       Text(
                         'homeEmptySectionTitle'.tr(),
                         style: theme.textTheme.titleMedium?.copyWith(
@@ -77,8 +91,8 @@ class _HomeView extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       EmptyStateCard(
-                        onAction: () =>
-                            context.read<BottomNavCubit>().setIndex(1),
+                        onAction: () => Navigator.of(context)
+                            .pushNamed(AppRoutes.combinationCreate),
                       ),
                     ],
                   ),

@@ -1,8 +1,10 @@
 abstract class BaseGptService {
-  Future<String> analyzeOutfit({
-    required String prompt,
-    required Map<String, dynamic> metadata,
+  Future<Map<String, dynamic>> analyzeClothingItem({
+    required String imageUrl,
+    required String category,
+    required String type,
   });
+
   Future<String> generateCombination({
     required String prompt,
     required List<Map<String, dynamic>> wardrobeItems,

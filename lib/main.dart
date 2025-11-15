@@ -10,8 +10,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vezu/core/base/base_firebase_storage_service.dart';
+import 'package:vezu/core/base/base_gpt_service.dart';
 import 'package:vezu/core/base/base_location_service.dart';
 import 'package:vezu/core/navigation/app_router.dart';
+import 'package:vezu/core/services/firebase_storage_service.dart';
+import 'package:vezu/core/services/gpt_service.dart';
 import 'package:vezu/core/theme/app_theme.dart';
 import 'package:vezu/core/utils/app_constants.dart';
 import 'package:vezu/features/auth/data/datasources/auth_local_data_source.dart';
@@ -24,6 +28,9 @@ import 'package:vezu/features/auth/domain/usecases/sign_in_with_google.dart';
 import 'package:vezu/features/auth/domain/usecases/sign_out.dart';
 import 'package:vezu/features/auth/domain/usecases/update_user_profile.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:vezu/features/combine/data/repositories/combination_repository_impl.dart';
+import 'package:vezu/features/combine/domain/repositories/combination_repository.dart';
+import 'package:vezu/features/combine/domain/usecases/generate_combination.dart';
 import 'package:vezu/features/onboarding/data/datasources/onboarding_local_data_source.dart';
 import 'package:vezu/features/onboarding/data/repositories/onboarding_repository_impl.dart';
 import 'package:vezu/features/onboarding/domain/repositories/onboarding_repository.dart';
@@ -33,6 +40,12 @@ import 'package:vezu/features/weather/data/datasources/weather_remote_data_sourc
 import 'package:vezu/features/weather/data/repositories/weather_repository_impl.dart';
 import 'package:vezu/features/weather/domain/repositories/weather_repository.dart';
 import 'package:vezu/features/weather/domain/usecases/get_weather.dart';
+import 'package:vezu/features/wardrobe/data/datasources/wardrobe_remote_data_source.dart';
+import 'package:vezu/features/wardrobe/data/repositories/wardrobe_repository_impl.dart';
+import 'package:vezu/features/wardrobe/domain/repositories/wardrobe_repository.dart';
+import 'package:vezu/features/wardrobe/domain/usecases/add_clothing_item.dart';
+import 'package:vezu/features/wardrobe/domain/usecases/delete_clothing_item.dart';
+import 'package:vezu/features/wardrobe/domain/usecases/watch_wardrobe_items.dart';
 import 'firebase_options.dart';
 import 'package:vezu/core/services/location_service.dart';
 
@@ -91,6 +104,26 @@ Future<void> main() async {
       WeatherRepositoryImpl(remoteDataSource: weatherRemoteDataSource);
   final getWeatherUseCase = GetWeatherUseCase(weatherRepository);
   final BaseLocationService locationService = LocationService();
+  final BaseFirebaseStorageService firebaseStorageService =
+      FirebaseStorageService(storage: FirebaseStorage.instance);
+  final BaseGptService gptService = GptService(dio: Dio());
+  final WardrobeRemoteDataSource wardrobeRemoteDataSource =
+      WardrobeRemoteDataSourceImpl(
+    firestore: FirebaseFirestore.instance,
+    storageService: firebaseStorageService,
+    gptService: gptService,
+  );
+  final WardrobeRepository wardrobeRepository =
+      WardrobeRepositoryImpl(remoteDataSource: wardrobeRemoteDataSource);
+  final CombinationRepository combinationRepository =
+      CombinationRepositoryImpl(gptService: gptService);
+  final addClothingItemUseCase = AddClothingItemUseCase(wardrobeRepository);
+  final watchWardrobeItemsUseCase =
+      WatchWardrobeItemsUseCase(wardrobeRepository);
+  final deleteClothingItemUseCase =
+      DeleteClothingItemUseCase(wardrobeRepository);
+  final generateCombinationUseCase =
+      GenerateCombinationUseCase(combinationRepository);
 
   runApp(
     EasyLocalization(
@@ -131,6 +164,24 @@ Future<void> main() async {
           ),
           RepositoryProvider<BaseLocationService>.value(
             value: locationService,
+          ),
+          RepositoryProvider<WardrobeRepository>.value(
+            value: wardrobeRepository,
+          ),
+          RepositoryProvider<AddClothingItemUseCase>.value(
+            value: addClothingItemUseCase,
+          ),
+          RepositoryProvider<WatchWardrobeItemsUseCase>.value(
+            value: watchWardrobeItemsUseCase,
+          ),
+          RepositoryProvider<DeleteClothingItemUseCase>.value(
+            value: deleteClothingItemUseCase,
+          ),
+          RepositoryProvider<CombinationRepository>.value(
+            value: combinationRepository,
+          ),
+          RepositoryProvider<GenerateCombinationUseCase>.value(
+            value: generateCombinationUseCase,
           ),
         ],
         child: BlocProvider(

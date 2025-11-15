@@ -7,4 +7,6 @@ class AppConstants {
   static const Locale defaultLocale = Locale('tr');
   static const supportedLocales = <Locale>[Locale('tr'), Locale('en')];
   static const String translationsPath = 'assets/translations';
+  static const String gptApiKey = '';
 }
+

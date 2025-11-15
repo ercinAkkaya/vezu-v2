@@ -11,6 +11,7 @@ class UserEntity extends Equatable {
     this.age,
     this.totalOutfitsCreated,
     this.subscriptionPlan,
+    this.totalClothes,
     this.profilePhotoUrl,
     this.lastLoginDate,
     this.deviceToken,
@@ -27,6 +28,7 @@ class UserEntity extends Equatable {
   final String? gender;
   final int? age;
   final int? totalOutfitsCreated;
+  final int? totalClothes;
   final String? subscriptionPlan;
   final String? profilePhotoUrl;
   final DateTime? lastLoginDate;
@@ -44,6 +46,7 @@ class UserEntity extends Equatable {
     String? gender,
     int? age,
     int? totalOutfitsCreated,
+    int? totalClothes,
     String? subscriptionPlan,
     String? profilePhotoUrl,
     DateTime? lastLoginDate,
@@ -61,6 +64,7 @@ class UserEntity extends Equatable {
       gender: gender ?? this.gender,
       age: age ?? this.age,
       totalOutfitsCreated: totalOutfitsCreated ?? this.totalOutfitsCreated,
+      totalClothes: totalClothes ?? this.totalClothes,
       subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,
       profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
       lastLoginDate: lastLoginDate ?? this.lastLoginDate,
@@ -81,6 +85,7 @@ class UserEntity extends Equatable {
         gender,
         age,
         totalOutfitsCreated,
+        totalClothes,
         subscriptionPlan,
         profilePhotoUrl,
         lastLoginDate,

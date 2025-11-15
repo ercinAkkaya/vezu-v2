@@ -30,6 +30,29 @@ class AuthCubit extends Cubit<AuthState> {
   final SignOutUseCase _signOutUseCase;
   final UpdateUserProfileUseCase _updateUserProfileUseCase;
 
+  void incrementTotalClothes() {
+    final currentUser = state.user;
+    if (currentUser == null) {
+      return;
+    }
+    final updatedUser = currentUser.copyWith(
+      totalClothes: (currentUser.totalClothes ?? 0) + 1,
+    );
+    emit(state.copyWith(user: updatedUser));
+  }
+
+  void decrementTotalClothes() {
+    final currentUser = state.user;
+    if (currentUser == null) {
+      return;
+    }
+    final currentCount = currentUser.totalClothes ?? 0;
+    final updatedUser = currentUser.copyWith(
+      totalClothes: currentCount > 0 ? currentCount - 1 : 0,
+    );
+    emit(state.copyWith(user: updatedUser));
+  }
+
   Future<void> checkAuthStatus() async {
     emit(state.copyWith(status: AuthStatus.loading, resetError: true));
     try {

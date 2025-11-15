@@ -47,14 +47,14 @@ android {
             keyAlias = (keystoreProperties["keyAlias"] as String?) ?: "flutter_key"
             keyPassword = (keystoreProperties["keyPassword"] as String?) ?: "Ercin!1283."
             storeFile = (keystoreProperties["storeFile"] as String?)?.let { file(it) }
-                ?: file("/Users/ercinakkaya/Desktop/code/school/flutter_keystore.jks")
+                ?: file("flutter_keystore.jks")
             storePassword = (keystoreProperties["storePassword"] as String?) ?: "Ercin!1283."
         }
         create("release") {
             keyAlias = (keystoreProperties["keyAlias"] as String?) ?: "flutter_key"
             keyPassword = (keystoreProperties["keyPassword"] as String?) ?: "Ercin!1283."
             storeFile = (keystoreProperties["storeFile"] as String?)?.let { file(it) }
-                ?: file("/Users/ercinakkaya/Desktop/code/school/flutter_keystore.jks")
+                ?: file("flutter_keystore.jks")
             storePassword = (keystoreProperties["storePassword"] as String?) ?: "Ercin!1283."
         }
     }
