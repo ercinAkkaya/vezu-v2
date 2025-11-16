@@ -131,8 +131,9 @@ class ProfilePage extends StatelessWidget {
             },
             builder: (context, authState) {
               final user = authState.user;
-              final displayName = _resolveDisplayName(user) ?? 'profileSampleName'.tr();
-              final email = user?.email ?? 'profileSampleEmail'.tr();
+              // TEMP: Hard-coded values for testing; will be reverted later
+              final displayName = 'Ali';
+              final email = 'ali@gmail.com';
               final avatarUrl = user?.profilePhotoUrl;
               final outfitsCount = (user?.totalOutfitsCreated ?? 0).toString();
               final totalClothes = (user?.totalClothes ?? 0).toString();

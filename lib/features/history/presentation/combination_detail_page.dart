@@ -268,7 +268,11 @@ class _DetailContent extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        "${args.piecesCount} parça",
+                                        "combinePiecesCount".tr(
+                                          namedArgs: {
+                                            'count': '${args.piecesCount}',
+                                          },
+                                        ),
                                         style: theme.textTheme.labelSmall
                                             ?.copyWith(
                                           color: Colors.white,

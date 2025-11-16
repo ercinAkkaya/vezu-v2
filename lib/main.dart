@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:vezu/core/base/base_firebase_storage_service.dart';
 import 'package:vezu/core/base/base_gpt_service.dart';
 import 'package:vezu/core/base/base_location_service.dart';
@@ -67,6 +68,13 @@ Future<void> main() async {
   }
   await EasyLocalization.ensureInitialized();
   final sharedPreferences = await SharedPreferences.getInstance();
+
+  // RevenueCat configuration
+  const revenueCatApiKey = 'test_AfcLmRKpIarroBHxoOoxGwKNtLI';
+  await Purchases.configure(
+    PurchasesConfiguration(revenueCatApiKey),
+  );
+  await Purchases.setLogLevel(LogLevel.debug);
 
   final AuthRepository authRepository = AuthRepositoryImpl(
     remoteDataSource: AuthRemoteDataSourceImpl(

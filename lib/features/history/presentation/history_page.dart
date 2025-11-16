@@ -387,7 +387,11 @@ class _HistoryCombinationCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                "${combination.piecesCount} parça",
+                                "combinePiecesCount".tr(
+                                  namedArgs: {
+                                    'count': '${combination.piecesCount}',
+                                  },
+                                ),
                                 style:
                                     theme.textTheme.labelSmall?.copyWith(
                                   fontWeight: FontWeight.w600,

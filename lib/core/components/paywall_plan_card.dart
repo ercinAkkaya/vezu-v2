@@ -111,7 +111,7 @@ class PaywallPlanCard extends StatelessWidget {
         .toList();
 
     return AppSurfaceCard(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       borderRadius: 32,
       gradient: LinearGradient(
         begin: Alignment.topLeft,
@@ -127,101 +127,106 @@ class PaywallPlanCard extends StatelessWidget {
           offset: const Offset(0, 22),
         ),
       ],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (badgeLabel != null) ...[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: highlightGradient,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                child: Text(
-                  badgeLabel!,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.4,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (badgeLabel != null) ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: highlightGradient,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  child: Text(
+                    badgeLabel!,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          Text(
-            title,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: titleColor,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.2,
-            ),
-          ),
-          if (description != null) ...[
-            const SizedBox(height: 10),
+              const SizedBox(height: 16),
+            ],
             Text(
-              description!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: descriptionColor,
+              title,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: titleColor,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
               ),
             ),
-          ],
-          const SizedBox(height: 18),
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: priceLabel,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    color: priceColor,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.6,
-                  ),
+            if (description != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                description!,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: descriptionColor,
                 ),
-                TextSpan(
-                  text: ' $billingLabel',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: billingColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (savingsLabel != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              savingsLabel!,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: savingsColor,
-                fontWeight: FontWeight.w600,
               ),
-            ),
-          ],
-          const SizedBox(height: 16),
-          for (var i = 0; i < featureItems.length; i++)
-            Padding(
-              padding: EdgeInsets.only(bottom: i == featureItems.length - 1 ? 0 : 10),
-              child: featureItems[i],
-            ),
-          const SizedBox(height: 10),
-          PrimaryFilledButton(
-            label: ctaLabel,
-            onPressed: onSubscribe,
-            minHeight: 50,
-          ),
-          if (footerNote != null) ...[
+            ],
             const SizedBox(height: 12),
-            Text(
-              footerNote!,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: footerNoteColor,
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: priceLabel,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: priceColor,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.6,
+                    ),
+                  ),
+                  TextSpan(
+                    text: ' $billingLabel',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: billingColor,
+                    ),
+                  ),
+                ],
               ),
             ),
+            if (savingsLabel != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                savingsLabel!,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: savingsColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+            const SizedBox(height: 10),
+            for (var i = 0; i < featureItems.length; i++)
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: i == featureItems.length - 1 ? 0 : 8,
+                ),
+                child: featureItems[i],
+              ),
+            const SizedBox(height: 8),
+            PrimaryFilledButton(
+              label: ctaLabel,
+              onPressed: onSubscribe,
+              minHeight: 46,
+            ),
+            if (footerNote != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                footerNote!,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: footerNoteColor,
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

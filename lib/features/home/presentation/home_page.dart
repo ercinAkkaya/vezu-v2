@@ -53,7 +53,8 @@ class _HomeView extends StatelessWidget {
               builder: (context, state) {
                 final authState = context.watch<AuthCubit>().state;
                 final user = authState.user;
-                final displayName = _resolveDisplayName(user) ?? state.userName;
+                // TEMP: Hard-coded name for testing; will be reverted later
+                final displayName = 'Ali';
                 final avatarUrl = user?.profilePhotoUrl ?? state.avatarUrl;
 
                 final weatherSection = _buildWeatherSection(context, state);
@@ -613,7 +614,8 @@ class _CombinationHistoryCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          "${combination.itemsCount} parça",
+                          "combinePiecesCount"
+                              .tr(namedArgs: {'count': '${combination.itemsCount}'}),
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),

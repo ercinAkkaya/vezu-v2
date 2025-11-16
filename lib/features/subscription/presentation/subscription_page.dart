@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:vezu/core/components/app_surface_card.dart';
 import 'package:vezu/core/components/paywall_plan_card.dart';
 
@@ -63,9 +65,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
   double _carouselHeight(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final baseHeight = screenHeight * 0.74;
-    final desiredHeight = max(540.0, baseHeight);
-    final maxAllowed = screenHeight - 96;
+    final baseHeight = screenHeight * 0.56;
+    final desiredHeight = max(420.0, baseHeight);
+    final maxAllowed = screenHeight - 140;
     return min(desiredHeight, maxAllowed);
   }
 
@@ -291,13 +293,26 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   }
 
   void _handleSubscribe(String planTitle) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'subscriptionSnackComingSoon'.tr(args: [planTitle]),
-        ),
-      ),
-    );
+    () async {
+      try {
+        await RevenueCatUI.presentPaywall();
+        final info = await Purchases.getCustomerInfo();
+        // Optionally: inspect info.entitlements.active here
+      } on PurchasesErrorCode catch (e) {
+        if (e == PurchasesErrorCode.purchaseCancelledError) {
+          return;
+        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Subscription failed: $e')),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unexpected error: $e')),
+        );
+      }
+    }();
   }
 
   List<_PlanData> _buildPlans(BuildContext context) {
