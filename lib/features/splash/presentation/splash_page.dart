@@ -18,7 +18,7 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
-  static const _minSplashDisplay = Duration(milliseconds: 2200);
+  static const _minSplashDisplay = Duration(milliseconds: 2000);
 
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
@@ -96,6 +96,8 @@ class _SplashPageState extends State<SplashPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final grayscalePrimary = Colors.white.withOpacity(0.9);
+    final grayscaleSecondary = Colors.white.withOpacity(0.6);
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -103,9 +105,9 @@ class _SplashPageState extends State<SplashPage>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF04050A),
-              Color(0xFF120818),
-              Color(0xFF1A0B1F),
+              Color(0xFF050505),
+              Color(0xFF0F0F0F),
+              Color(0xFF1A1A1A),
             ],
           ),
         ),
@@ -114,13 +116,13 @@ class _SplashPageState extends State<SplashPage>
             Positioned(
               top: -80,
               right: -40,
-              child: _GlowingOrb(color: colorScheme.primary.withOpacity(0.35)),
+              child: _GlowingOrb(color: Colors.white.withOpacity(0.15)),
             ),
             Positioned(
               bottom: -60,
               left: -20,
               child: _GlowingOrb(
-                color: colorScheme.secondary.withOpacity(0.25),
+                color: Colors.white.withOpacity(0.08),
                 size: 200,
               ),
             ),
@@ -149,47 +151,47 @@ class _SplashPageState extends State<SplashPage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(26),
+                        padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(36),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.12),
+                            color: Colors.white.withOpacity(0.18),
                           ),
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Colors.white.withOpacity(0.12),
-                              Colors.white.withOpacity(0.02),
+                              Color(0x26FFFFFF),
+                              Color(0x0DFFFFFF),
                             ],
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: colorScheme.primary.withOpacity(0.35),
-                              blurRadius: 45,
+                              color: Colors.black.withOpacity(0.45),
+                              blurRadius: 40,
                               spreadRadius: 2,
-                              offset: const Offset(0, 20),
+                              offset: const Offset(0, 28),
                             ),
                           ],
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(28),
                           child: Container(
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
+                            padding: const EdgeInsets.all(22),
+                            decoration: const BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  colorScheme.primary.withOpacity(0.35),
-                                  Colors.black.withOpacity(0.1),
+                                  Color(0x33000000),
+                                  Color(0x12000000),
                                 ],
                               ),
                             ),
                             child: Image.asset(
                               'assets/png/vezu.png',
-                              width: 140,
-                              height: 140,
+                              width: 160,
+                              height: 160,
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -201,7 +203,7 @@ class _SplashPageState extends State<SplashPage>
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.8,
-                          color: Colors.white,
+                          color: grayscalePrimary,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -209,7 +211,7 @@ class _SplashPageState extends State<SplashPage>
                         'loginSubtitle'.tr(),
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withOpacity(0.78),
+                          color: grayscaleSecondary,
                           height: 1.4,
                         ),
                       ),
@@ -219,9 +221,15 @@ class _SplashPageState extends State<SplashPage>
                         spacing: 10,
                         runSpacing: 10,
                         children: [
-                          _FeatureChip(label: 'splashFeatureAiCombos'.tr()),
-                          _FeatureChip(label: 'splashFeatureSmartWardrobe'.tr()),
-                          _FeatureChip(label: 'splashFeatureStyleTips'.tr()),
+                          _FeatureChip(
+                            label: 'splashFeatureAiCombos'.tr(),
+                          ),
+                          _FeatureChip(
+                            label: 'splashFeatureSmartWardrobe'.tr(),
+                          ),
+                          _FeatureChip(
+                            label: 'splashFeatureStyleTips'.tr(),
+                          ),
                         ],
                       ),
                     ],
@@ -274,15 +282,15 @@ class _FeatureChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withOpacity(0.04),
         border: Border.all(
-          color: Colors.white.withOpacity(0.12),
+          color: Colors.white.withOpacity(0.16),
         ),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withOpacity(0.85),
               letterSpacing: -0.2,
             ),
       ),

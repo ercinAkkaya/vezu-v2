@@ -27,6 +27,7 @@ class HomePage extends StatelessWidget {
       create: (context) => HomeCubit(
         getWeatherUseCase: context.read<GetWeatherUseCase>(),
         locationService: context.read<BaseLocationService>(),
+        authCubit: context.read<AuthCubit>(),
       )..loadDashboard(),
       child: const _HomeView(),
     );
@@ -68,7 +69,11 @@ class _HomeView extends StatelessWidget {
                     verticalPadding.clamp(12.0, 24.0);
 
                 return RefreshIndicator(
-                  onRefresh: context.read<HomeCubit>().refreshWeather,
+                  onRefresh: () =>
+                      context.read<HomeCubit>().refreshWeather().then(
+                            (_) =>
+                                context.read<HomeCubit>().loadDashboard(),
+                          ),
                   child: ListView(
                     padding: EdgeInsets.symmetric(
                       vertical: verticalPaddingValue,
@@ -107,19 +112,29 @@ class _HomeView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (!hasWardrobeItems) const SizedBox(height: 24),
-                            Text(
-                              'homeEmptySectionTitle'.tr(),
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
+                            _RecentCombinationsSection(
+                              combinations: state.recentCombinations,
+                              isLoading: state.isCombinationsLoading,
+                              errorKey: state.combinationsErrorKey,
+                            ),
+                            const SizedBox(height: 24),
+                            if (state.recentCombinations.isEmpty) ...[
+                              if (!hasWardrobeItems)
+                                const SizedBox(height: 24),
+                              Text(
+                                'homeEmptySectionTitle'.tr(),
+                                style:
+                                    theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            EmptyStateCard(
-                              onAction: () => Navigator.of(
-                                context,
-                              ).pushNamed(AppRoutes.combinationCreate),
-                            ),
+                              const SizedBox(height: 16),
+                              EmptyStateCard(
+                                onAction: () => Navigator.of(
+                                  context,
+                                ).pushNamed(AppRoutes.combinationCreate),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -280,6 +295,357 @@ class _HomeView extends StatelessWidget {
       case WeatherCondition.unknown:
         return Icons.device_unknown;
     }
+  }
+}
+
+class _RecentCombinationsSection extends StatelessWidget {
+  const _RecentCombinationsSection({
+    required this.combinations,
+    required this.isLoading,
+    this.errorKey,
+  });
+
+  final List<SavedCombination> combinations;
+  final bool isLoading;
+  final String? errorKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "homeHistoryTitle".tr(),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (combinations.isNotEmpty)
+              TextButton(
+                onPressed: () {
+                  // Gelecekte tam geçmiş sayfasına yönlendirme için kullanılabilir.
+                },
+                child: Text(
+                  "homeHistorySeeAll".tr(),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (isLoading)
+          SizedBox(
+            height: 160,
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2.4,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  theme.colorScheme.primary,
+                ),
+              ),
+            ),
+          )
+        else if (errorKey != null)
+          Text(
+            errorKey!.tr(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.error,
+            ),
+          )
+        else if (combinations.isEmpty)
+          Text(
+            "homeHistoryEmpty".tr(),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          )
+        else
+          _buildVerticalList(theme, context),
+      ],
+    );
+  }
+
+  Widget _buildVerticalList(ThemeData theme, BuildContext context) {
+    const maxVisible = 4;
+    final visibleCombinations =
+        combinations.take(maxVisible).toList(growable: false);
+    final hasMore = combinations.length > maxVisible;
+
+    if (!hasMore) {
+      return Column(
+        children: visibleCombinations
+            .map(
+              (combination) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _CombinationHistoryCard(combination: combination),
+              ),
+            )
+            .toList(),
+      );
+    }
+
+    return Column(
+      children: [
+        // İlk 3 kart normal görünsün
+        for (var i = 0; i < visibleCombinations.length; i++)
+          if (i < maxVisible - 1)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _CombinationHistoryCard(
+                combination: visibleCombinations[i],
+              ),
+            )
+          else
+            // 4. kartın alt kısmına gradient + buton bindir
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Stack(
+                children: [
+                  _CombinationHistoryCard(
+                    combination: visibleCombinations[i],
+                  ),
+                  Positioned.fill(
+                    child: _HistorySeeMoreOverlay(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("comingSoon".tr()),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+      ],
+    );
+  }
+}
+
+class _CombinationHistoryCard extends StatelessWidget {
+  const _CombinationHistoryCard({required this.combination});
+
+  final SavedCombination combination;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryItem = combination.primaryItem;
+
+    return AppSurfaceCard(
+      padding: const EdgeInsets.all(14),
+      borderRadius: 24,
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          theme.colorScheme.surface.withValues(alpha: 0.98),
+          theme.colorScheme.surfaceVariant.withValues(alpha: 0.96),
+        ],
+      ),
+      borderColor: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+      borderWidth: 1.1,
+      elevation: 0.22,
+      shadows: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.06),
+          blurRadius: 22,
+          offset: const Offset(0, 14),
+        ),
+        BoxShadow(
+          color: theme.colorScheme.primary.withValues(alpha: 0.10),
+          blurRadius: 30,
+          spreadRadius: -8,
+          offset: const Offset(0, 20),
+        )
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  gradient: primaryItem?.imageUrl == null
+                      ? LinearGradient(
+                          colors: [
+                            theme.colorScheme.primary
+                                .withValues(alpha: 0.24),
+                            theme.colorScheme.primary
+                                .withValues(alpha: 0.06),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  image: primaryItem?.imageUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(primaryItem!.imageUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: primaryItem?.imageUrl == null
+                    ? Icon(
+                        Icons.checkroom_rounded,
+                        color: theme.colorScheme.onPrimary,
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      combination.theme,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (combination.mood != null &&
+                        combination.mood!.trim().isNotEmpty)
+                      Text(
+                        combination.mood!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.7),
+                        ),
+                      ),
+                    if (combination.createdAt != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        DateFormat("d MMM, HH:mm")
+                            .format(combination.createdAt!),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            combination.summary,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.09),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.layers_rounded,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "${combination.itemsCount} parça",
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Icon(
+                Icons.arrow_forward_rounded,
+                size: 18,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HistorySeeMoreOverlay extends StatelessWidget {
+  const _HistorySeeMoreOverlay({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            begin: Alignment(0.0, -0.5),
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.surface.withValues(alpha: 0.25),
+              theme.colorScheme.surface.withValues(alpha: 0.7),
+              theme.colorScheme.surface.withValues(alpha: 0.94),
+              theme.colorScheme.surface.withValues(alpha: 1.0),
+            ],
+          ),
+        ),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.blur_on_rounded,
+                  size: 18,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "homeHistorySeeMore".tr(),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

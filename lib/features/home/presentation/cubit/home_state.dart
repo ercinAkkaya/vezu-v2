@@ -17,6 +17,9 @@ class HomeState extends Equatable {
     this.locationServiceDisabled = false,
     this.isRefreshing = false,
     this.weatherCondition = WeatherCondition.partlyCloudy,
+    this.recentCombinations = const [],
+    this.isCombinationsLoading = false,
+    this.combinationsErrorKey,
   });
 
   final HomeStatus status;
@@ -32,6 +35,9 @@ class HomeState extends Equatable {
   final bool locationServiceDisabled;
   final bool isRefreshing;
   final WeatherCondition weatherCondition;
+  final List<SavedCombination> recentCombinations;
+  final bool isCombinationsLoading;
+  final String? combinationsErrorKey;
 
   HomeState copyWith({
     HomeStatus? status,
@@ -48,6 +54,10 @@ class HomeState extends Equatable {
     bool? locationServiceDisabled,
     bool? isRefreshing,
     WeatherCondition? weatherCondition,
+    List<SavedCombination>? recentCombinations,
+    bool? isCombinationsLoading,
+    String? combinationsErrorKey,
+    bool resetCombinationsError = false,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -67,6 +77,11 @@ class HomeState extends Equatable {
           locationServiceDisabled ?? this.locationServiceDisabled,
       isRefreshing: isRefreshing ?? this.isRefreshing,
       weatherCondition: weatherCondition ?? this.weatherCondition,
+      recentCombinations: recentCombinations ?? this.recentCombinations,
+      isCombinationsLoading: isCombinationsLoading ?? this.isCombinationsLoading,
+      combinationsErrorKey: resetCombinationsError
+          ? null
+          : combinationsErrorKey ?? this.combinationsErrorKey,
     );
   }
 
@@ -85,5 +100,8 @@ class HomeState extends Equatable {
         locationServiceDisabled,
         isRefreshing,
         weatherCondition,
+        recentCombinations,
+        isCombinationsLoading,
+        combinationsErrorKey,
       ];
 }

@@ -1,26 +1,78 @@
 import "dart:async";
 
 import "package:bloc/bloc.dart";
+import "package:cloud_firestore/cloud_firestore.dart";
 import "package:equatable/equatable.dart";
-import 'package:vezu/core/base/base_location_service.dart';
-import 'package:vezu/features/weather/domain/entities/weather_condition.dart';
-import 'package:vezu/features/weather/domain/usecases/get_weather.dart';
+import "package:vezu/core/base/base_location_service.dart";
+import "package:vezu/features/auth/presentation/cubit/auth_cubit.dart";
+import "package:vezu/features/weather/domain/entities/weather_condition.dart";
+import "package:vezu/features/weather/domain/usecases/get_weather.dart";
 
 part "home_state.dart";
+
+class SavedCombinationItem extends Equatable {
+  const SavedCombinationItem({
+    required this.imageUrl,
+    required this.category,
+    required this.nickname,
+  });
+
+  final String? imageUrl;
+  final String category;
+  final String nickname;
+
+  @override
+  List<Object?> get props => [imageUrl, category, nickname];
+}
+
+class SavedCombination extends Equatable {
+  const SavedCombination({
+    required this.id,
+    required this.theme,
+    required this.summary,
+    required this.mood,
+    required this.createdAt,
+    required this.items,
+  });
+
+  final String id;
+  final String theme;
+  final String summary;
+  final String? mood;
+  final DateTime? createdAt;
+  final List<SavedCombinationItem> items;
+
+  SavedCombinationItem? get primaryItem =>
+      items.isNotEmpty ? items.first : null;
+
+  int get itemsCount => items.length;
+
+  @override
+  List<Object?> get props => [id, theme, summary, mood, createdAt, items];
+}
 
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit({
     required GetWeatherUseCase getWeatherUseCase,
     required BaseLocationService locationService,
+    required AuthCubit authCubit,
+    FirebaseFirestore? firestore,
   })  : _getWeatherUseCase = getWeatherUseCase,
         _locationService = locationService,
+        _authCubit = authCubit,
+        _firestore = firestore ?? FirebaseFirestore.instance,
         super(const HomeState());
 
   final GetWeatherUseCase _getWeatherUseCase;
   final BaseLocationService _locationService;
+  final AuthCubit _authCubit;
+  final FirebaseFirestore _firestore;
 
-  Future<void> loadDashboard() {
-    return _fetchWeather(showLoading: true);
+  Future<void> loadDashboard() async {
+    await Future.wait([
+      _fetchWeather(showLoading: true),
+      _loadRecentCombinations(),
+    ]);
   }
 
   Future<void> refreshWeather() {
@@ -39,6 +91,75 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> openDeviceLocationSettings() async {
     await _locationService.openLocationSettings();
     await _fetchWeather(showLoading: true);
+  }
+
+  Future<void> _loadRecentCombinations() async {
+    final userId = _authCubit.state.user?.id;
+    if (userId == null || userId.isEmpty) {
+      emit(
+        state.copyWith(
+          recentCombinations: const [],
+          isCombinationsLoading: false,
+          resetCombinationsError: true,
+        ),
+      );
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        isCombinationsLoading: true,
+        resetCombinationsError: true,
+      ),
+    );
+
+    try {
+      final snapshot = await _firestore
+          .collection("users")
+          .doc(userId)
+          .collection("saved_combinations")
+          .orderBy("created_at", descending: true)
+          .limit(10)
+          .get();
+
+      final combinations = snapshot.docs.map((doc) {
+        final data = doc.data();
+        final createdAt = data["created_at"];
+        final itemsRaw = (data["items"] as List<dynamic>? ?? []);
+
+        final items = itemsRaw.map((raw) {
+          final map = raw as Map<String, dynamic>;
+          return SavedCombinationItem(
+            imageUrl: map["image_url"] as String?,
+            category: (map["category"] as String?) ?? "-",
+            nickname: (map["nickname"] as String?) ?? "",
+          );
+        }).toList();
+
+        return SavedCombination(
+          id: data["id"] as String? ?? doc.id,
+          theme: (data["theme"] as String?) ?? "",
+          summary: (data["summary"] as String?) ?? "",
+          mood: data["mood"] as String?,
+          createdAt: createdAt is Timestamp ? createdAt.toDate() : null,
+          items: items,
+        );
+      }).toList();
+
+      emit(
+        state.copyWith(
+          recentCombinations: combinations,
+          isCombinationsLoading: false,
+        ),
+      );
+    } catch (_) {
+      emit(
+        state.copyWith(
+          isCombinationsLoading: false,
+          combinationsErrorKey: "homeHistoryLoadError",
+        ),
+      );
+    }
   }
 
   Future<void> _fetchWeather({required bool showLoading}) async {

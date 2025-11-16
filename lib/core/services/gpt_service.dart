@@ -43,7 +43,7 @@ Output requirements:
   {
     "category": "",                // string, use provided category value
     "type": "",                    // string, use provided type value
-    "gender_fit": "",              // string: one of ["male", "female", "unisex", "kids", "baby"] or "unknown"
+    "gender_fit": "",              // string: one of ["male", "female", "unisex", "kids", "baby"]
     "color_palette": [],           // array of 1-3 strings with basic color names (e.g., ["navy", "white"]); use lowercase
     "color_tone": "",              // string: one of ["warm", "cool", "neutral"]
     "fabric": "",                  // string: e.g., "cotton", "denim", "wool", or "unknown"
