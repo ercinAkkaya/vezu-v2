@@ -14,6 +14,7 @@ import "package:vezu/features/auth/domain/entities/user_entity.dart";
 import "package:vezu/features/auth/presentation/cubit/auth_cubit.dart";
 import "package:vezu/features/shell/presentation/cubit/bottom_nav_cubit.dart";
 import "package:vezu/features/weather/domain/entities/weather_condition.dart";
+import "package:vezu/features/history/presentation/combination_detail_page.dart";
 import "package:vezu/features/weather/domain/usecases/get_weather.dart";
 
 import "cubit/home_cubit.dart";
@@ -90,7 +91,7 @@ class _HomeView extends StatelessWidget {
                               userName: displayName,
                               avatarUrl: avatarUrl,
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
                           ],
                         ),
                       ),
@@ -98,7 +99,7 @@ class _HomeView extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: weatherSection,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 10),
                       if (hasWardrobeItems) ...[
                         WardrobeItemCarousel(
                           title: 'homeWardrobeSpotlight'.tr(),
@@ -106,7 +107,7 @@ class _HomeView extends StatelessWidget {
                           onSeeAll: () =>
                               context.read<BottomNavCubit>().setIndex(1),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                       ],
                       Padding(
                         padding: EdgeInsets.symmetric(
@@ -331,7 +332,7 @@ class _RecentCombinationsSection extends StatelessWidget {
             if (combinations.isNotEmpty)
               TextButton(
                 onPressed: () {
-                  // Gelecekte tam geçmiş sayfasına yönlendirme için kullanılabilir.
+                  Navigator.of(context).pushNamed(AppRoutes.history);
                 },
                 child: Text(
                   "homeHistorySeeAll".tr(),
@@ -403,6 +404,21 @@ class _RecentCombinationsSection extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: _CombinationHistoryCard(
                 combination: visibleCombinations[i],
+                onTap: () {
+                  final combo = visibleCombinations[i];
+                  Navigator.of(context).pushNamed(
+                    AppRoutes.historyDetail,
+                    arguments: CombinationDetailArgs(
+                      id: combo.id,
+                      theme: combo.theme,
+                      summary: combo.summary,
+                      mood: combo.mood,
+                      createdAt: combo.createdAt,
+                      piecesCount: combo.itemsCount,
+                      primaryImageUrl: combo.primaryItem?.imageUrl,
+                    ),
+                  );
+                },
               ),
             )
           else
@@ -413,15 +429,26 @@ class _RecentCombinationsSection extends StatelessWidget {
                 children: [
                   _CombinationHistoryCard(
                     combination: visibleCombinations[i],
+                    onTap: () {
+                      final combo = visibleCombinations[i];
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.historyDetail,
+                        arguments: CombinationDetailArgs(
+                          id: combo.id,
+                          theme: combo.theme,
+                          summary: combo.summary,
+                          mood: combo.mood,
+                          createdAt: combo.createdAt,
+                          piecesCount: combo.itemsCount,
+                          primaryImageUrl: combo.primaryItem?.imageUrl,
+                        ),
+                      );
+                    },
                   ),
                   Positioned.fill(
                     child: _HistorySeeMoreOverlay(
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("comingSoon".tr()),
-                          ),
-                        );
+                        Navigator.of(context).pushNamed(AppRoutes.history);
                       },
                     ),
                   ),
@@ -434,165 +461,178 @@ class _RecentCombinationsSection extends StatelessWidget {
 }
 
 class _CombinationHistoryCard extends StatelessWidget {
-  const _CombinationHistoryCard({required this.combination});
+  const _CombinationHistoryCard({
+    required this.combination,
+    this.onTap,
+  });
 
   final SavedCombination combination;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryItem = combination.primaryItem;
 
-    return AppSurfaceCard(
-      padding: const EdgeInsets.all(14),
-      borderRadius: 24,
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          theme.colorScheme.surface.withValues(alpha: 0.98),
-          theme.colorScheme.surfaceVariant.withValues(alpha: 0.96),
-        ],
-      ),
-      borderColor: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-      borderWidth: 1.1,
-      elevation: 0.22,
-      shadows: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.06),
-          blurRadius: 22,
-          offset: const Offset(0, 14),
-        ),
-        BoxShadow(
-          color: theme.colorScheme.primary.withValues(alpha: 0.10),
-          blurRadius: 30,
-          spreadRadius: -8,
-          offset: const Offset(0, 20),
-        )
-      ],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: onTap,
+        child: AppSurfaceCard(
+          padding: const EdgeInsets.all(14),
+          borderRadius: 24,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.surface.withValues(alpha: 0.98),
+              theme.colorScheme.surfaceVariant.withValues(alpha: 0.96),
+            ],
+          ),
+          borderColor: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          borderWidth: 1.1,
+          elevation: 0.22,
+          shadows: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 22,
+              offset: const Offset(0, 14),
+            ),
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: 0.10),
+              blurRadius: 30,
+              spreadRadius: -8,
+              offset: const Offset(0, 20),
+            )
+          ],
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  gradient: primaryItem?.imageUrl == null
-                      ? LinearGradient(
-                          colors: [
-                            theme.colorScheme.primary
-                                .withValues(alpha: 0.24),
-                            theme.colorScheme.primary
-                                .withValues(alpha: 0.06),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : null,
-                  image: primaryItem?.imageUrl != null
-                      ? DecorationImage(
-                          image: NetworkImage(primaryItem!.imageUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: primaryItem?.imageUrl == null
-                    ? Icon(
-                        Icons.checkroom_rounded,
-                        color: theme.colorScheme.onPrimary,
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      combination.theme,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      gradient: primaryItem?.imageUrl == null
+                          ? LinearGradient(
+                              colors: [
+                                theme.colorScheme.primary
+                                    .withValues(alpha: 0.24),
+                                theme.colorScheme.primary
+                                    .withValues(alpha: 0.06),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      image: primaryItem?.imageUrl != null
+                          ? DecorationImage(
+                              image: NetworkImage(primaryItem!.imageUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    const SizedBox(height: 4),
-                    if (combination.mood != null &&
-                        combination.mood!.trim().isNotEmpty)
-                      Text(
-                        combination.mood!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.7),
+                    child: primaryItem?.imageUrl == null
+                        ? Icon(
+                            Icons.checkroom_rounded,
+                            color: theme.colorScheme.onPrimary,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          combination.theme,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      ),
-                    if (combination.createdAt != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        DateFormat("d MMM, HH:mm")
-                            .format(combination.createdAt!),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ],
+                        const SizedBox(height: 4),
+                        if (combination.mood != null &&
+                            combination.mood!.trim().isNotEmpty)
+                          Text(
+                            combination.mood!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.7),
+                            ),
+                          ),
+                        if (combination.createdAt != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            DateFormat("d MMM, HH:mm")
+                                .format(combination.createdAt!),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                combination.summary,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  height: 1.3,
                 ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      color: theme.colorScheme.primary
+                          .withValues(alpha: 0.09),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.layers_rounded,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          "${combination.itemsCount} parça",
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 18,
+                    color: theme.colorScheme.onSurface
+                        .withValues(alpha: 0.6),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Text(
-            combination.summary,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  color: theme.colorScheme.primary.withValues(alpha: 0.09),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.layers_rounded,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      "${combination.itemsCount} parça",
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              Icon(
-                Icons.arrow_forward_rounded,
-                size: 18,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

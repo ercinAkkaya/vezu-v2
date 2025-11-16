@@ -33,167 +33,242 @@ class WardrobeItemCard extends StatelessWidget {
     final visibleChips = infoChips.take(maxVisibleChips).toList();
     final overflowCount = infoChips.length - visibleChips.length;
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.08),
-          width: 0.8,
+    return GestureDetector(
+      onTap: () => _showImagePreview(context),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: theme.colorScheme.primary.withOpacity(0.08),
+            width: 0.8,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 14),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned.fill(
-            child: Image.network(
-              item.imageUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) {
-                  return child;
-                }
-                return Container(
-                  color: theme.colorScheme.surface,
-                  alignment: Alignment.center,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(
-                      theme.colorScheme.primary,
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: Image.network(
+                item.imageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+                  return Container(
+                    color: theme.colorScheme.surface,
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(
+                        theme.colorScheme.primary,
+                      ),
                     ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: theme.colorScheme.surfaceVariant,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: theme.colorScheme.outline,
+                    size: 32,
                   ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: theme.colorScheme.surfaceVariant,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.broken_image_outlined,
-                  color: theme.colorScheme.outline,
-                  size: 32,
                 ),
               ),
             ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.05),
-                    Colors.black.withOpacity(0.6),
-                  ],
-                  stops: const [0.4, 1],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withOpacity(0.05),
+                      Colors.black.withOpacity(0.6),
+                    ],
+                    stops: const [0.4, 1],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            top: 14,
-            left: 14,
-            right: onDelete != null ? 60 : 14,
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: _Badge(
-                    text: item.category.replaceAll('_', ' '),
-                    color: Colors.white.withOpacity(0.85),
-                    foreground: Colors.black87,
-                  ),
-                ),
-                if (metadata.genderFit.isNotEmpty) ...[
+            Positioned(
+              top: 14,
+              left: 14,
+              right: onDelete != null ? 60 : 14,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
                   Align(
                     alignment: Alignment.centerLeft,
                     child: _Badge(
-                      text: metadata.genderFit,
-                      color: theme.colorScheme.primary.withOpacity(0.8),
-                      foreground: theme.colorScheme.onPrimary,
+                      text: item.category.replaceAll('_', ' '),
+                      color: Colors.white.withOpacity(0.85),
+                      foreground: Colors.black87,
                     ),
                   ),
+                  if (metadata.genderFit.isNotEmpty) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: _Badge(
+                        text: metadata.genderFit,
+                        color: theme.colorScheme.primary.withOpacity(0.8),
+                        foreground: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ),
-          if (onDelete != null)
-            Positioned(
-              top: 14,
-              right: 14,
-              child: _ActionButton(
-                icon: Icons.delete_outline_rounded,
-                onPressed: onDelete!,
               ),
             ),
-          Positioned(
-            left: 18,
-            right: 18,
-            bottom: 18,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  item.type.replaceAll('_', ' '),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
-                  ),
+            if (onDelete != null)
+              Positioned(
+                top: 14,
+                right: 14,
+                child: _ActionButton(
+                  icon: Icons.delete_outline_rounded,
+                  onPressed: onDelete!,
                 ),
-                if (subtitleParts.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+              ),
+            Positioned(
+              left: 18,
+              right: 18,
+              bottom: 18,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Text(
-                    subtitleParts.join(' • '),
+                    item.type.replaceAll('_', ' '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
                     ),
                   ),
+                  if (subtitleParts.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitleParts.join(' • '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                  if (visibleChips.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        ...visibleChips.map(
+                          (value) => _InfoChip(
+                            label: value,
+                            theme: theme,
+                            isOverlay: true,
+                          ),
+                        ),
+                        if (overflowCount > 0)
+                          _InfoChip(
+                            label: '+$overflowCount',
+                            theme: theme,
+                            isOverlay: true,
+                            isOverflow: true,
+                          ),
+                      ],
+                    ),
+                  ],
                 ],
-                if (visibleChips.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    children: [
-                      ...visibleChips.map(
-                        (value) => _InfoChip(
-                          label: value,
-                          theme: theme,
-                          isOverlay: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImagePreview(BuildContext context) {
+    final theme = Theme.of(context);
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.75),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Stack(
+              children: [
+                Container(
+                  color: theme.colorScheme.surface,
+                  child: InteractiveViewer(
+                    minScale: 1,
+                    maxScale: 3,
+                    child: AspectRatio(
+                      aspectRatio: 3 / 4,
+                      child: Image.network(
+                        item.imageUrl,
+                        fit: BoxFit.contain,
+                        loadingBuilder:
+                            (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+                          return Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(
+                                theme.colorScheme.primary,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder:
+                            (context, error, stackTrace) => Center(
+                          child: Icon(
+                            Icons.broken_image_outlined,
+                            size: 40,
+                            color: theme.colorScheme.outline,
+                          ),
                         ),
                       ),
-                      if (overflowCount > 0)
-                        _InfoChip(
-                          label: '+$overflowCount',
-                          theme: theme,
-                          isOverlay: true,
-                          isOverflow: true,
-                        ),
-                    ],
+                    ),
                   ),
-                ],
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Material(
+                    color: Colors.black.withOpacity(0.45),
+                    shape: const CircleBorder(),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                      ),
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -277,10 +278,35 @@ class ProfilePage extends StatelessWidget {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: InfoStatCard(
-                                  value: outfitsCount,
-                                  label: 'profileStatOutfits'.tr(),
-                                  icon: Icons.auto_awesome_outlined,
+                                child: FutureBuilder<
+                                    QuerySnapshot<Map<String, dynamic>>>(
+                                  future: user?.id == null
+                                      ? null
+                                      : FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(user!.id)
+                                          .collection('saved_combinations')
+                                          .get(),
+                                  builder: (context, snapshot) {
+                                    final count = snapshot.hasData
+                                        ? snapshot.data!.docs.length
+                                        : int.tryParse(outfitsCount) ?? 0;
+                                    return Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(20),
+                                        onTap: () => Navigator.of(context)
+                                            .pushNamed(
+                                          AppRoutes.history,
+                                        ),
+                                        child: InfoStatCard(
+                                          value: count.toString(),
+                                          label: 'profileStatOutfits'.tr(),
+                                          icon: Icons.auto_awesome_outlined,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                               const SizedBox(width: 12),

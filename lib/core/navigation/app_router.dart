@@ -3,6 +3,8 @@ import 'package:vezu/core/components/paywall_billing_toggle.dart';
 import 'package:vezu/features/auth/presentation/auth_page.dart';
 import 'package:vezu/features/auth/presentation/register_page.dart';
 import 'package:vezu/features/combine/presentation/combine_page.dart';
+import 'package:vezu/features/history/presentation/history_page.dart';
+import 'package:vezu/features/history/presentation/combination_detail_page.dart';
 import 'package:vezu/features/onboarding/presentation/onboarding_page.dart';
 import 'package:vezu/features/shell/presentation/main_shell_page.dart';
 import 'package:vezu/features/splash/presentation/splash_page.dart';
@@ -16,6 +18,8 @@ class AppRoutes {
   static const String main = '/main';
   static const String combinationCreate = '/combination/create';
   static const String subscription = '/subscription';
+  static const String history = '/history';
+  static const String historyDetail = '/history/detail';
 }
 
 class AppRouter {
@@ -44,6 +48,34 @@ class AppRouter {
                 initialCycle is PaywallBillingCycle ? initialCycle : null,
           ),
           fullscreenDialog: true,
+        );
+      case AppRoutes.history:
+        return MaterialPageRoute<void>(
+          builder: (_) => const HistoryPage(),
+        );
+      case AppRoutes.historyDetail:
+        final args = settings.arguments as CombinationDetailArgs;
+        return PageRouteBuilder<void>(
+          pageBuilder: (_, __, ___) => CombinationDetailPage(args: args),
+          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+            final offsetTween = Tween<Offset>(
+              begin: const Offset(0, 0.06),
+              end: Offset.zero,
+            ).chain(
+              CurveTween(curve: Curves.easeOutCubic),
+            );
+            final fadeAnimation = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOut,
+            );
+            return FadeTransition(
+              opacity: fadeAnimation,
+              child: SlideTransition(
+                position: animation.drive(offsetTween),
+                child: child,
+              ),
+            );
+          },
         );
       default:
         return MaterialPageRoute<void>(builder: (_) => const SplashPage());

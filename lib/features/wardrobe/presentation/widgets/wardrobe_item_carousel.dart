@@ -180,146 +180,223 @@ class _SpotlightItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      width: 160,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          colors: [
-            Colors.black.withOpacity(0.02),
-            theme.colorScheme.surface.withOpacity(0.9),
+    return GestureDetector(
+      onTap: () => _showImagePreview(context, item),
+      child: Container(
+        width: 160,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          gradient: LinearGradient(
+            colors: [
+              Colors.black.withOpacity(0.02),
+              theme.colorScheme.surface.withOpacity(0.9),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(
+            color: theme.colorScheme.primary.withOpacity(0.12),
+            width: 0.8,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 15,
+              offset: const Offset(0, 10),
+            ),
+            BoxShadow(
+              color: theme.colorScheme.primary.withOpacity(0.08),
+              blurRadius: 24,
+              offset: const Offset(0, 14),
+            ),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-        border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.12),
-          width: 0.8,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 10),
-          ),
-          BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(26),
-            child: Image.network(
-              item.imageUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              loadingBuilder: (context, child, progress) {
-                if (progress == null) return child;
-                return Container(
-                  color: theme.colorScheme.surface,
-                  alignment: Alignment.center,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(
-                      theme.colorScheme.primary,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(26),
+              child: Image.network(
+                item.imageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return Container(
+                    color: theme.colorScheme.surface,
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(
+                        theme.colorScheme.primary,
+                      ),
                     ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: theme.colorScheme.surfaceVariant,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: theme.colorScheme.outline,
+                    size: 28,
                   ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: theme.colorScheme.surfaceVariant,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.broken_image_outlined,
-                  color: theme.colorScheme.outline,
-                  size: 28,
                 ),
               ),
             ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(26),
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black.withOpacity(0.05),
-                  Colors.black.withOpacity(0.55),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.05),
+                    Colors.black.withOpacity(0.55),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
-          ),
-          Positioned(
-            top: 10,
-            left: 10,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(16),
+            Positioned(
+              top: 10,
+              left: 10,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.local_fire_department_rounded,
+                      size: 14,
+                      color: Colors.deepOrangeAccent,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      "Spotlight",
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                        letterSpacing: -0.05,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
+            ),
+            Positioned(
+              left: 14,
+              right: 14,
+              bottom: 14,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.local_fire_department_rounded,
-                    size: 14,
-                    color: Colors.deepOrangeAccent,
-                  ),
-                  const SizedBox(width: 5),
                   Text(
-                    "Spotlight",
-                    style: theme.textTheme.labelMedium?.copyWith(
+                    item.type.replaceAll("_", " "),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                      letterSpacing: -0.05,
+                      fontSize: 14,
+                      letterSpacing: -0.15,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.category.replaceAll("_", " "),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: Colors.white.withOpacity(0.75),
+                      fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          Positioned(
-            left: 14,
-            right: 14,
-            bottom: 14,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImagePreview(BuildContext context, ClothingItem item) {
+    final theme = Theme.of(context);
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.75),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Stack(
               children: [
-                Text(
-                  item.type.replaceAll("_", " "),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    letterSpacing: -0.15,
+                Container(
+                  color: theme.colorScheme.surface,
+                  child: InteractiveViewer(
+                    minScale: 1,
+                    maxScale: 3,
+                    child: AspectRatio(
+                      aspectRatio: 3 / 4,
+                      child: Image.network(
+                        item.imageUrl,
+                        fit: BoxFit.contain,
+                        loadingBuilder:
+                            (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+                          return Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(
+                                theme.colorScheme.primary,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder:
+                            (context, error, stackTrace) => Center(
+                          child: Icon(
+                            Icons.broken_image_outlined,
+                            size: 40,
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  item.category.replaceAll("_", " "),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: Colors.white.withOpacity(0.75),
-                    fontSize: 12,
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Material(
+                    color: Colors.black.withOpacity(0.45),
+                    shape: const CircleBorder(),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                      ),
+                      onPressed: () =>
+                          Navigator.of(dialogContext).pop(),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
