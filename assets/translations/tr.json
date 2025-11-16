@@ -103,6 +103,8 @@
   "historyEmptySubtitle": "Ana sayfa veya kombin ekranından bir görünüm kaydedersen burada görünecek.",
   "historyLoadError": "Kaydedilen kombinler yüklenirken bir sorun oluştu. Lütfen tekrar dene.",
   "historyDetailSubtitle": "Bu kombini oluşturan tüm parçaları gör.",
+  "historyShare": "Paylaş",
+  "historyFavorite": "Favorilere ekle",
   "homeEmptyStateTitle": "Henüz kombin yok",
   "homeEmptyStateSubtitle": "İlk kombinini hemen oluştur!",
   "homeEmptyStateCta": "Başla",

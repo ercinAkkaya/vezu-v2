@@ -32,7 +32,7 @@ class WardrobeTopBar extends StatelessWidget {
         Text(
           'wardrobeItemsCount'.tr(namedArgs: {'count': '$itemCount'}),
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.outline,
+            color: Colors.black,
           ),
         ),
         const SizedBox(height: 16),

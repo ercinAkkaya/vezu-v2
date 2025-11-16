@@ -212,7 +212,9 @@ class ProfilePage extends StatelessWidget {
                                         _InfoChip(
                                           icon: Icons.cake_outlined,
                                           label: 'profileAgeSuffix'.tr(
-                                            args: ['${user!.age}'],
+                                            namedArgs: {
+                                              'age': '${user!.age}',
+                                            },
                                           ),
                                         ),
                                     ],

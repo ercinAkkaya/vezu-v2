@@ -103,6 +103,8 @@
   "historyEmptySubtitle": "Save an outfit from the home or combination screen to see it here.",
   "historyLoadError": "We couldn't load your saved combinations. Please try again.",
   "historyDetailSubtitle": "See every item that builds this look.",
+  "historyShare": "Share",
+  "historyFavorite": "Add to favorites",
   "homeEmptyStateTitle": "No outfits yet",
   "homeEmptyStateSubtitle": "Create your first combination!",
   "homeEmptyStateCta": "Get Started",

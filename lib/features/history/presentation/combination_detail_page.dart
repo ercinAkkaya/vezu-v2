@@ -370,7 +370,7 @@ class _DetailContent extends StatelessWidget {
                         children: [
                           Expanded(
                             child: SecondaryOutlinedButton(
-                              label: "Paylaş",
+                              label: "historyShare".tr(),
                               onPressed: () {},
                               icon: const Icon(Icons.ios_share_rounded),
                               minHeight: 44,
@@ -379,9 +379,10 @@ class _DetailContent extends StatelessWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: PrimaryFilledButton(
-                              label: "Favorilere ekle",
+                              label: "historyFavorite".tr(),
                               onPressed: () {},
-                              icon: const Icon(Icons.favorite_border_rounded),
+                              icon:
+                                  const Icon(Icons.favorite_border_rounded),
                               minHeight: 44,
                             ),
                           ),
