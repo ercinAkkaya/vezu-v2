@@ -91,11 +91,14 @@ class _HomeView extends StatelessWidget {
                               avatarUrl: avatarUrl,
                             ),
                             const SizedBox(height: 20),
-                            weatherSection,
-                            const SizedBox(height: 24),
                           ],
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: weatherSection,
+                      ),
+                      const SizedBox(height: 24),
                       if (hasWardrobeItems) ...[
                         WardrobeItemCarousel(
                           title: 'homeWardrobeSpotlight'.tr(),

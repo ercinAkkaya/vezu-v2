@@ -40,28 +40,18 @@ class WeatherSummaryCard extends StatelessWidget {
     ];
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.16,
+      height: MediaQuery.of(context).size.height * 0.17,
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         image: DecorationImage(
           image: AssetImage(backdrop.assetPath),
-          fit: BoxFit.cover,
+          fit: BoxFit.fill,
         ),
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.05),
-              Colors.black.withValues(alpha: 0.25),
-            ],
-          ),
-        ),
-        padding: const EdgeInsets.all(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
