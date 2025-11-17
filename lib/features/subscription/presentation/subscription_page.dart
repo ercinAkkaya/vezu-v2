@@ -73,9 +73,32 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   }
   
   Future<void> _loadPrices() async {
+    setState(() {
+      _isLoadingPrices = true;
+    });
+    
+    debugPrint('[SubscriptionPage] Starting to load prices...');
+    
     try {
       // Cache'i temizle ve offerings'leri yeniden yükle
+      debugPrint('[SubscriptionPage] Fetching offerings from RevenueCat...');
       final offerings = await RevenueCatService.instance.getOfferings(forceRefresh: true);
+      
+      if (offerings == null) {
+        debugPrint('[SubscriptionPage] ❌ Offerings is null - RevenueCat connection may have failed');
+        debugPrint('[SubscriptionPage] Possible causes:');
+        debugPrint('  1. Invalid API key');
+        debugPrint('  2. No offerings configured in RevenueCat Dashboard');
+        debugPrint('  3. Test API key may not have sandbox offerings configured');
+        debugPrint('  4. Network connection issue');
+        setState(() {
+          _isLoadingPrices = false;
+        });
+        return;
+      }
+      
+      debugPrint('[SubscriptionPage] ✅ Offerings fetched: ${offerings.all.length} total offerings');
+      
       if (offerings != null) {
         // Önce current offering'i dene, yoksa tüm offering'leri kontrol et
         Offering? offeringToUse = offerings.current;
@@ -145,19 +168,21 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             _isLoadingPrices = false;
           });
         } else {
-          debugPrint('No offerings found');
+          debugPrint('[SubscriptionPage] ❌ No offering found to use');
+          debugPrint('[SubscriptionPage] Available offerings: ${offerings.all.keys.toList()}');
           setState(() {
             _isLoadingPrices = false;
           });
         }
       } else {
-        debugPrint('No offerings found');
+        debugPrint('[SubscriptionPage] ❌ Offerings is null after fetch');
         setState(() {
           _isLoadingPrices = false;
         });
       }
-    } catch (e) {
-      debugPrint('Error loading prices: $e');
+    } catch (e, stackTrace) {
+      debugPrint('[SubscriptionPage] ❌ Error loading prices: $e');
+      debugPrint('[SubscriptionPage] Stack trace: $stackTrace');
       setState(() {
         _isLoadingPrices = false;
       });

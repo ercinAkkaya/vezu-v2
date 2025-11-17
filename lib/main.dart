@@ -72,13 +72,44 @@ Future<void> main() async {
   // RevenueCat configuration
   // TODO: RevenueCat Dashboard'dan doğru Android Public API Key'i alıp buraya ekleyin
   // Dashboard: https://app.revenuecat.com -> Project Settings -> API Keys
-  const revenueCatApiKey = 'goog_ifBWZzvGcsbWBsIhLAcWaOHhgAG'; // Production anahtarı
-  // const revenueCatApiKey = 'test_YOUR_TEST_API_KEY_HERE'; // Test için
+  // 
+  // ÖNEMLİ: Test API key sadece DEBUG modda çalışır, RELEASE build'lerde production key gerekir!
+  // Release build (dahili test, production) için production API key kullanılmalı
+  // Test API key'i sadece local debug için kullanılabilir
+  // 
+  // Test için önerilen yöntem:
+  // 1. Production API key kullan (release build için gerekli)
+  // 2. Google Play Console'da License Testing yapılandır (test kullanıcıları için para çekilmez)
+  // 
+  // ÖNEMLİ: Test API key ile ürün çekemiyorsan sebep şunlar olabilir:
+  // 1. RevenueCat Dashboard'da sandbox offerings yapılandırılmamış olabilir
+  // 2. Test API key'in offerings'lere erişim yetkisi olmayabilir
+  // 3. Google Play Console'da test ürünleri aktif olmayabilir
+  // 
+  // Çözüm: Test API key kullanmak yerine, Production API key + Google Play License Testing kullan
+  // (Daha önce eklediğin test API key'i kullanmak istersen aşağıdaki satırı aç)
+  const revenueCatApiKey = kDebugMode 
+      ? 'test_lQruLqRgYNxAuDDyhDtuinudPQL' // Production key (test için License Testing kullan)
+      // ? 'test_lQruLqRgYNxAuDDyhDtuinudPQL' // Test key (sandbox offerings gerekli)
+      : 'goog_ifBWZzvGcsbWBsIhLAcWaOHhgAG'; // Production anahtarı (release build için gerekli)
   
-  await Purchases.configure(
-    PurchasesConfiguration(revenueCatApiKey),
-  );
-  await Purchases.setLogLevel(LogLevel.debug);
+  debugPrint('[RevenueCat] API Key: ${revenueCatApiKey.substring(0, 10)}... (${kDebugMode ? "DEBUG" : "RELEASE"} mod)');
+  debugPrint('[RevenueCat] API Key Type: ${revenueCatApiKey.startsWith('test_') ? "TEST/SANDBOX" : "PRODUCTION"}');
+  
+  // RevenueCat yapılandırması - hata yakalama ile
+  try {
+    await Purchases.configure(
+      PurchasesConfiguration(revenueCatApiKey),
+    );
+    await Purchases.setLogLevel(LogLevel.debug);
+    debugPrint('[RevenueCat] ✅ Başarıyla yapılandırıldı. Mod: ${kDebugMode ? "DEBUG" : "RELEASE"}');
+    debugPrint('[RevenueCat] API Key Type: ${revenueCatApiKey.startsWith('test_') ? "TEST/SANDBOX - Sandbox offerings gerekiyor!" : "PRODUCTION - Google Play License Testing gerekiyor!"}');
+  } catch (e, stackTrace) {
+    // RevenueCat yapılandırması başarısız olsa bile uygulama çalışmaya devam etmeli
+    debugPrint('[RevenueCat] ❌ Yapılandırma hatası: $e');
+    debugPrint('[RevenueCat] Stack trace: $stackTrace');
+    debugPrint('[RevenueCat] Uygulama RevenueCat olmadan devam edecek. Abonelik özellikleri çalışmayabilir.');
+  }
 
   final AuthRepository authRepository = AuthRepositoryImpl(
     remoteDataSource: AuthRemoteDataSourceImpl(

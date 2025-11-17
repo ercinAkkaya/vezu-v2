@@ -51,7 +51,46 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
 
-      final deviceToken = await _messaging.getToken();
+      // Push notification token'ı al - hata olsa bile giriş devam etsin
+      String? deviceToken;
+      try {
+        // Permission durumunu kontrol et
+        final settings = await _messaging.getNotificationSettings();
+        
+        // Permission verilmişse token'ı al
+        if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+            settings.authorizationStatus == AuthorizationStatus.provisional) {
+          deviceToken = await _messaging.getToken();
+          log('Push notification token alındı: ${deviceToken?.substring(0, 20)}...');
+        } else {
+          log('Push notification permission verilmemiş. Authorization status: ${settings.authorizationStatus}');
+          // Permission yoksa tekrar iste (opsiyonel)
+          try {
+            final permission = await _messaging.requestPermission(
+              alert: true,
+              announcement: false,
+              badge: true,
+              carPlay: false,
+              criticalAlert: false,
+              provisional: false,
+              sound: true,
+            );
+            if (permission.authorizationStatus == AuthorizationStatus.authorized ||
+                permission.authorizationStatus == AuthorizationStatus.provisional) {
+              deviceToken = await _messaging.getToken();
+              log('Push notification token alındı (permission sonrası): ${deviceToken?.substring(0, 20)}...');
+            }
+          } catch (permissionError) {
+            log('Push notification permission istenirken hata: $permissionError');
+          }
+        }
+      } catch (e) {
+        // Messaging token alınamazsa null bırak, giriş işlemi devam etsin
+        // Bu durum genellikle Google Play Services olmayan cihazlarda veya emulator'de olur
+        log('Push notification token alınamadı (opsiyonel): $e');
+        deviceToken = null;
+      }
+      
       final now = DateTime.now();
 
       final existingUser = await _remoteDataSource.fetchUser(firebaseUser.uid);
