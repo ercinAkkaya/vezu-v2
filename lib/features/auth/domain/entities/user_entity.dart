@@ -18,6 +18,11 @@ class UserEntity extends Equatable {
     this.notificationEnabled,
     this.subscriptionStartDate,
     this.subscriptionEndDate,
+    this.subscriptionPeriodStartDate,
+    this.subscriptionPeriodEndDate,
+    this.subscriptionLastRenewalDate,
+    this.monthlyCombinationsUsed,
+    this.monthlyCombinationsResetDate,
   });
 
   final String id;
@@ -36,6 +41,11 @@ class UserEntity extends Equatable {
   final bool? notificationEnabled;
   final DateTime? subscriptionStartDate;
   final DateTime? subscriptionEndDate;
+  final DateTime? subscriptionPeriodStartDate;
+  final DateTime? subscriptionPeriodEndDate;
+  final DateTime? subscriptionLastRenewalDate;
+  final int? monthlyCombinationsUsed;
+  final DateTime? monthlyCombinationsResetDate;
 
   UserEntity copyWith({
     String? id,
@@ -54,6 +64,11 @@ class UserEntity extends Equatable {
     bool? notificationEnabled,
     DateTime? subscriptionStartDate,
     DateTime? subscriptionEndDate,
+    DateTime? subscriptionPeriodStartDate,
+    DateTime? subscriptionPeriodEndDate,
+    DateTime? subscriptionLastRenewalDate,
+    int? monthlyCombinationsUsed,
+    DateTime? monthlyCombinationsResetDate,
   }) {
     return UserEntity(
       id: id ?? this.id,
@@ -72,6 +87,11 @@ class UserEntity extends Equatable {
       notificationEnabled: notificationEnabled ?? this.notificationEnabled,
       subscriptionStartDate: subscriptionStartDate ?? this.subscriptionStartDate,
       subscriptionEndDate: subscriptionEndDate ?? this.subscriptionEndDate,
+      subscriptionPeriodStartDate: subscriptionPeriodStartDate ?? this.subscriptionPeriodStartDate,
+      subscriptionPeriodEndDate: subscriptionPeriodEndDate ?? this.subscriptionPeriodEndDate,
+      subscriptionLastRenewalDate: subscriptionLastRenewalDate ?? this.subscriptionLastRenewalDate,
+      monthlyCombinationsUsed: monthlyCombinationsUsed ?? this.monthlyCombinationsUsed,
+      monthlyCombinationsResetDate: monthlyCombinationsResetDate ?? this.monthlyCombinationsResetDate,
     );
   }
 
@@ -93,6 +113,11 @@ class UserEntity extends Equatable {
         notificationEnabled,
         subscriptionStartDate,
         subscriptionEndDate,
+        subscriptionPeriodStartDate,
+        subscriptionPeriodEndDate,
+        subscriptionLastRenewalDate,
+        monthlyCombinationsUsed,
+        monthlyCombinationsResetDate,
       ];
 }
 

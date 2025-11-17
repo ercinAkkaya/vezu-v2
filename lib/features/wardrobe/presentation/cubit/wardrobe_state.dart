@@ -17,6 +17,7 @@ class WardrobeState extends Equatable {
     this.searchQuery = '',
     this.wardrobeItems = const <ClothingItem>[],
     this.visibleItems = const <ClothingItem>[],
+    this.shouldShowPaywall = false,
   });
 
   final bool isProcessing;
@@ -34,6 +35,7 @@ class WardrobeState extends Equatable {
   final String searchQuery;
   final List<ClothingItem> wardrobeItems;
   final List<ClothingItem> visibleItems;
+  final bool shouldShowPaywall;
 
   WardrobeState copyWith({
     bool? isProcessing,
@@ -58,6 +60,8 @@ class WardrobeState extends Equatable {
     String? searchQuery,
     List<ClothingItem>? wardrobeItems,
     List<ClothingItem>? visibleItems,
+    bool? shouldShowPaywall,
+    bool resetPaywall = false,
   }) {
     return WardrobeState(
       isProcessing: isProcessing ?? this.isProcessing,
@@ -85,6 +89,7 @@ class WardrobeState extends Equatable {
       searchQuery: searchQuery ?? this.searchQuery,
       wardrobeItems: wardrobeItems ?? this.wardrobeItems,
       visibleItems: visibleItems ?? this.visibleItems,
+      shouldShowPaywall: resetPaywall ? false : (shouldShowPaywall ?? this.shouldShowPaywall),
     );
   }
 
@@ -105,5 +110,6 @@ class WardrobeState extends Equatable {
     searchQuery,
         wardrobeItems,
     visibleItems,
+    shouldShowPaywall,
   ];
 }

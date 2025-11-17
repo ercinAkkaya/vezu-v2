@@ -1,10 +1,13 @@
 import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:vezu/core/components/app_surface_card.dart';
 import 'package:vezu/core/components/paywall_plan_card.dart';
+import 'package:vezu/core/services/revenuecat_service.dart';
+import 'package:vezu/core/services/subscription_service.dart';
 
 import '../../../core/components/paywall_billing_toggle.dart';
 
@@ -32,9 +35,20 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     'monthly_pro': PaywallBillingCycle.monthly,
     'yearly_pro': PaywallBillingCycle.yearly,
   };
+  
+  // RevenueCat package identifier mapping
+  static const Map<String, String> _planToPackageId = {
+    'monthly_premium': 'vezu_monthly_premium',
+    'monthly_pro': 'vezu_monthly_pro',
+    'yearly_pro': 'vezu_yearly',
+  };
 
   late final PageController _pageController;
   late int _currentPage;
+  
+  Offerings? _offerings;
+  bool _isLoadingPrices = true;
+  Map<String, Package> _packagesMap = {};
 
   @override
   void initState() {
@@ -55,6 +69,99 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       viewportFraction: 0.75,
       initialPage: _currentPage,
     );
+    _loadPrices();
+  }
+  
+  Future<void> _loadPrices() async {
+    try {
+      // Cache'i temizle ve offerings'leri yeniden yükle
+      final offerings = await RevenueCatService.instance.getOfferings(forceRefresh: true);
+      if (offerings != null) {
+        // Önce current offering'i dene, yoksa tüm offering'leri kontrol et
+        Offering? offeringToUse = offerings.current;
+        
+        if (offeringToUse == null && offerings.all.isNotEmpty) {
+          // Current offering yoksa, tüm offering'lerden "Vezu Default Offering" veya "default" ara
+          for (var offering in offerings.all.values) {
+            if (offering.identifier.toLowerCase().contains('default') ||
+                offering.identifier.toLowerCase().contains('vezu')) {
+              offeringToUse = offering;
+              debugPrint('Using offering: ${offering.identifier}');
+              break;
+            }
+          }
+          // Eğer hala bulunamazsa, ilk offering'i kullan
+          if (offeringToUse == null) {
+            offeringToUse = offerings.all.values.first;
+            debugPrint('Using first available offering: ${offeringToUse.identifier}');
+          }
+        }
+        
+        if (offeringToUse != null) {
+          debugPrint('Current offering: ${offeringToUse.identifier}');
+          debugPrint('Available packages count: ${offeringToUse.availablePackages.length}');
+          
+          final packagesMap = <String, Package>{};
+          for (var package in offeringToUse.availablePackages) {
+            // Package identifier ile eşleştir (vezu_monthly_premium gibi)
+            packagesMap[package.identifier] = package;
+            
+            // Debug: Package bilgilerini logla
+            debugPrint('Package found: ${package.identifier}');
+            debugPrint('  Product ID: ${package.storeProduct?.identifier}');
+            debugPrint('  Price: ${package.storeProduct?.priceString}');
+            debugPrint('  Currency Code: ${package.storeProduct?.currencyCode}');
+            debugPrint('  Package Type: ${package.packageType}');
+            
+            // Product ID formatı: "vezu_monthly_premium:vezu-monthly-premium" şeklinde olabilir
+            // Eğer öyleyse, ilk kısmı (package identifier) kullan
+            final productId = package.storeProduct?.identifier ?? '';
+            if (productId.contains(':')) {
+              final parts = productId.split(':');
+              if (parts.isNotEmpty) {
+                final extractedId = parts[0];
+                debugPrint('  Extracted Package ID from Product ID: $extractedId');
+                // Product ID'den package identifier çıkar ve map'e ekle
+                packagesMap[extractedId] = package;
+                
+                // Ayrıca product ID'nin ikinci kısmını da kontrol et (vezu-yearly-pro-v2 gibi)
+                if (parts.length > 1) {
+                  final googlePlayProductId = parts[1];
+                  debugPrint('  Google Play Product ID: $googlePlayProductId');
+                  // Google Play Product ID'yi underscore'lı versiyona çevir
+                  final normalizedId = googlePlayProductId.replaceAll('-', '_');
+                  if (normalizedId != extractedId) {
+                    debugPrint('  Normalized ID: $normalizedId');
+                    packagesMap[normalizedId] = package;
+                  }
+                }
+              }
+            }
+          }
+          
+          setState(() {
+            _offerings = offerings;
+            _packagesMap = packagesMap;
+            _isLoadingPrices = false;
+          });
+        } else {
+          debugPrint('No offerings found');
+          setState(() {
+            _isLoadingPrices = false;
+          });
+        }
+      } else {
+        debugPrint('No offerings found');
+        setState(() {
+          _isLoadingPrices = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading prices: $e');
+      setState(() {
+        _isLoadingPrices = false;
+      });
+    }
   }
 
   @override
@@ -182,7 +289,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                   footerNote: plan.footerNote,
                   features: plan.features,
                   ctaLabel: plan.ctaLabel,
-                  onSubscribe: () => _handleSubscribe(plan.title),
+                  onSubscribe: () => _handleSubscribe(plan.id),
                   isPromoted: plan.isPromoted,
                   isActive: isActive,
                 ),
@@ -292,27 +399,201 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     );
   }
 
-  void _handleSubscribe(String planTitle) {
-    () async {
-      try {
-        await RevenueCatUI.presentPaywall();
-        final info = await Purchases.getCustomerInfo();
-        // Optionally: inspect info.entitlements.active here
-      } on PurchasesErrorCode catch (e) {
-        if (e == PurchasesErrorCode.purchaseCancelledError) {
-          return;
-        }
+  Future<void> _handleSubscribe(String planId) async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Subscription failed: $e')),
+          const SnackBar(content: Text('Kullanıcı bilgisi bulunamadı')),
         );
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Unexpected error: $e')),
-        );
+        return;
       }
-    }();
+
+      final package = _getPackageForPlan(planId);
+      if (package != null) {
+        await Purchases.purchasePackage(package);
+        // Satın alma başarılı, subscription'ı senkronize et
+        await SubscriptionService.instance().syncSubscriptionFromRevenueCat(userId);
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      } else {
+        // Fallback: RevenueCat UI kullan
+        await RevenueCatUI.presentPaywall();
+        // Satın alma başarılı, subscription'ı senkronize et
+        await SubscriptionService.instance().syncSubscriptionFromRevenueCat(userId);
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
+    } on PurchasesErrorCode catch (e) {
+      if (e == PurchasesErrorCode.purchaseCancelledError) {
+        return;
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Abonelik işlemi başarısız: $e')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Beklenmeyen hata: $e')),
+      );
+    }
+  }
+
+  String _getPriceFromPackage(String planId, String fallbackPrice) {
+    if (_isLoadingPrices) return fallbackPrice;
+    
+    // Önce plan ID'den package identifier'ı al
+    final packageId = _planToPackageId[planId] ?? planId;
+    final package = _packagesMap[packageId];
+    if (package != null && package.storeProduct != null) {
+      // priceString zaten yerel para birimine göre formatlanmış olmalı
+      return package.storeProduct!.priceString;
+    }
+    
+    // Eğer package bulunamazsa, tüm package'ları kontrol et
+    // Product ID formatı: "vezu_monthly_pro:vezu-monthly-pro" şeklinde olabilir
+    for (var entry in _packagesMap.entries) {
+      final pkg = entry.value;
+      final productId = pkg.storeProduct?.identifier ?? '';
+      
+      // Product ID'den package identifier'ı çıkar (eğer ":" varsa)
+      String? extractedPackageId;
+      if (productId.contains(':')) {
+        extractedPackageId = productId.split(':').first;
+      }
+      
+      // Package identifier veya Product ID'de plan ID'yi ara
+      if (entry.key.contains(planId) ||
+          entry.key == packageId ||
+          extractedPackageId == packageId ||
+          productId.contains(packageId) ||
+          productId.contains(planId.replaceAll('_', '-'))) {
+        return pkg.storeProduct!.priceString;
+      }
+    }
+    
+    debugPrint('Package not found for plan: $planId (packageId: $packageId)');
+    debugPrint('Available packages: ${_packagesMap.keys.toList()}');
+    // Tüm package'ları ve product ID'lerini göster
+    for (var entry in _packagesMap.entries) {
+      debugPrint('  - ${entry.key} -> Product ID: ${entry.value.storeProduct?.identifier}');
+    }
+    return fallbackPrice;
+  }
+  
+  String _getBillingPeriod(String planId, String fallbackBilling) {
+    // Önce plan ID'den package identifier'ı al
+    final packageId = _planToPackageId[planId] ?? planId;
+    final package = _packagesMap[packageId];
+    if (package != null && package.packageType == PackageType.monthly) {
+      return '/ay';
+    } else if (package != null && package.packageType == PackageType.annual) {
+      return '/yıl';
+    }
+    
+    // Fallback olarak plan cycle'dan al
+    final cycle = _planCycleMap[planId];
+    if (cycle == PaywallBillingCycle.monthly) {
+      return '/ay';
+    } else if (cycle == PaywallBillingCycle.yearly) {
+      return '/yıl';
+    }
+    
+    return fallbackBilling;
+  }
+  
+  Package? _getPackageForPlan(String planId) {
+    // Önce plan ID'den package identifier'ı al
+    final packageId = _planToPackageId[planId] ?? planId;
+    
+    debugPrint('Looking for package: planId=$planId, packageId=$packageId');
+    
+    // Identifier ile direkt eşleştir
+    if (_packagesMap.containsKey(packageId)) {
+      debugPrint('Found package by direct match: $packageId');
+      return _packagesMap[packageId];
+    }
+    
+    // Eğer bulunamazsa, tüm package'ları kontrol et
+    // Product ID formatı: "vezu_monthly_pro:vezu-monthly-pro" şeklinde olabilir
+    for (var entry in _packagesMap.entries) {
+      final pkg = entry.value;
+      final productId = pkg.storeProduct?.identifier ?? '';
+      final packageType = pkg.packageType;
+      
+      // Product ID'den package identifier'ı çıkar (eğer ":" varsa)
+      String? extractedPackageId;
+      String? googlePlayProductId;
+      if (productId.contains(':')) {
+        final parts = productId.split(':');
+        extractedPackageId = parts.isNotEmpty ? parts[0] : null;
+        googlePlayProductId = parts.length > 1 ? parts[1] : null;
+      }
+      
+      // Plan cycle'a göre package type kontrolü
+      final cycle = _planCycleMap[planId];
+      final isYearlyPlan = cycle == PaywallBillingCycle.yearly;
+      final isMonthlyPlan = cycle == PaywallBillingCycle.monthly;
+      final isYearlyPackage = packageType == PackageType.annual;
+      final isMonthlyPackage = packageType == PackageType.monthly;
+      
+      // Package identifier veya Product ID'de plan ID'yi ara
+      bool matches = entry.key.contains(planId) ||
+          entry.key == packageId ||
+          extractedPackageId == packageId ||
+          productId.contains(packageId) ||
+          productId.contains(planId.replaceAll('_', '-'));
+      
+      // Yearly plan için annual package, monthly plan için monthly package kontrolü
+      if (isYearlyPlan && isYearlyPackage && productId.contains('yearly')) {
+        matches = true;
+      }
+      
+      // Package identifier "Yearly" veya yıllık içeren şeyler için kontrol
+      if (isYearlyPlan && 
+          (entry.key.toLowerCase().contains('yearly') ||
+           entry.key.toLowerCase() == 'yearly' ||
+           packageType == PackageType.annual)) {
+        // Product ID'de de yearly_pro_v2 varsa kesin eşleşme
+        if (productId.contains('yearly_pro_v2') || productId.contains('yearly-pro-v2')) {
+          matches = true;
+          debugPrint('  Match found via yearly package type and yearly_pro_v2!');
+        }
+      }
+      if (isMonthlyPlan && isMonthlyPackage && !productId.contains('yearly')) {
+        // Monthly için zaten yukarıdaki kontroller yeterli
+      }
+      
+      // Google Play Product ID'yi normalize et ve kontrol et
+      if (googlePlayProductId != null) {
+        final normalizedId = googlePlayProductId.replaceAll('-', '_');
+        debugPrint('  Checking normalized ID: $normalizedId vs packageId: $packageId');
+        if (normalizedId == packageId || normalizedId.contains(planId)) {
+          matches = true;
+          debugPrint('  Match found via normalized ID!');
+        }
+      }
+      
+      // Yearly pro v2 için özel kontrol
+      if (planId == 'yearly_pro' && productId.contains('yearly_pro_v2')) {
+        matches = true;
+        debugPrint('  Match found via yearly_pro_v2 in product ID!');
+      }
+      
+      if (matches) {
+        debugPrint('✅ Found package by search: ${entry.key} -> Product ID: $productId, Type: $packageType');
+        return pkg;
+      } else {
+        debugPrint('  ❌ No match: ${entry.key} -> Product ID: $productId');
+      }
+    }
+    
+    debugPrint('Package not found for planId: $planId, packageId: $packageId');
+    return null;
   }
 
   List<_PlanData> _buildPlans(BuildContext context) {
@@ -322,10 +603,17 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         cycle: PaywallBillingCycle.monthly,
         title: 'subscriptionPlanPremiumTitle'.tr(),
         description: 'subscriptionPlanPremiumDescription'.tr(),
-        priceLabel: 'subscriptionPlanPremiumPrice'.tr(),
-        billingLabel: 'subscriptionPlanPremiumBilling'.tr(),
+        priceLabel: _getPriceFromPackage(
+          'monthly_premium',
+          'subscriptionPlanPremiumPrice'.tr(),
+        ),
+        billingLabel: _getBillingPeriod(
+          'monthly_premium',
+          'subscriptionPlanPremiumBilling'.tr(),
+        ),
         badgeLabel: 'subscriptionPlanPremiumBadge'.tr(),
         ctaLabel: 'subscriptionPlanPremiumCta'.tr(),
+        package: _getPackageForPlan('monthly_premium'),
         features: [
           PaywallFeatureData(
             label: 'subscriptionPlanPremiumFeaturePhotos'.tr(),
@@ -344,10 +632,17 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         cycle: PaywallBillingCycle.monthly,
         title: 'subscriptionPlanMonthlyProTitle'.tr(),
         description: 'subscriptionPlanMonthlyProDescription'.tr(),
-        priceLabel: 'subscriptionPlanMonthlyProPrice'.tr(),
-        billingLabel: 'subscriptionPlanMonthlyProBilling'.tr(),
+        priceLabel: _getPriceFromPackage(
+          'monthly_pro',
+          'subscriptionPlanMonthlyProPrice'.tr(),
+        ),
+        billingLabel: _getBillingPeriod(
+          'monthly_pro',
+          'subscriptionPlanMonthlyProBilling'.tr(),
+        ),
         badgeLabel: 'subscriptionPlanMonthlyProBadge'.tr(),
         ctaLabel: 'subscriptionPlanMonthlyProCta'.tr(),
+        package: _getPackageForPlan('monthly_pro'),
         isPromoted: true,
         features: [
           PaywallFeatureData(
@@ -375,11 +670,18 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         cycle: PaywallBillingCycle.yearly,
         title: 'subscriptionPlanYearlyProTitle'.tr(),
         description: 'subscriptionPlanYearlyProDescription'.tr(),
-        priceLabel: 'subscriptionPlanYearlyProPrice'.tr(),
-        billingLabel: 'subscriptionPlanYearlyProBilling'.tr(),
+        priceLabel: _getPriceFromPackage(
+          'yearly_pro',
+          'subscriptionPlanYearlyProPrice'.tr(),
+        ),
+        billingLabel: _getBillingPeriod(
+          'yearly_pro',
+          'subscriptionPlanYearlyProBilling'.tr(),
+        ),
         badgeLabel: 'subscriptionPlanYearlyProBadge'.tr(),
         savingsLabel: 'subscriptionPlanYearlyProSavings'.tr(),
         ctaLabel: 'subscriptionPlanYearlyProCta'.tr(),
+        package: _getPackageForPlan('yearly_pro'),
         isPromoted: true,
         footerNote: 'subscriptionPlanYearlyProFooter'.tr(),
         features: [
@@ -422,6 +724,7 @@ class _PlanData {
     this.savingsLabel,
     this.footerNote,
     this.isPromoted = false,
+    this.package,
   });
 
   final String id;
@@ -436,6 +739,7 @@ class _PlanData {
   final String? savingsLabel;
   final String? footerNote;
   final bool isPromoted;
+  final Package? package;
 }
 
 class _GuaranteeBullet extends StatelessWidget {

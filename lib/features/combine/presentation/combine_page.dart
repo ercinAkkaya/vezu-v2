@@ -1,9 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vezu/core/base/base_location_service.dart';
 import 'package:vezu/core/components/app_surface_card.dart';
 import 'package:vezu/core/components/primary_filled_button.dart';
+import 'package:vezu/core/models/subscription_plan_limits.dart';
+import 'package:vezu/core/navigation/app_router.dart';
+import 'package:vezu/core/services/subscription_service.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:vezu/features/combination/presentation/components/combination_selectable_pill.dart';
 import 'package:vezu/core/utils/weather_backdrop.dart';
@@ -45,6 +49,16 @@ class _CombineView extends StatelessWidget {
               ScaffoldMessenger.of(
                 context,
               ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+            }
+            if (state.shouldShowPaywall) {
+              _showLimitExceededMessage(context, isClothes: false);
+              // Snackbar gösterildikten sonra paywall'ı aç
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (context.mounted) {
+                  Navigator.of(context).pushNamed(AppRoutes.subscription);
+                  context.read<CombineCubit>().clearPaywall();
+                }
+              });
             }
           },
           builder: (context, state) {
@@ -111,6 +125,10 @@ class _CombineView extends StatelessWidget {
                               isSaving: state.isSavingPlan,
                               hasSaved: state.hasSavedPlan,
                             )
+                          else if (!state.isWardrobeLoading && state.wardrobeItems.length < 10)
+                            _InsufficientClothesWarning(
+                              currentCount: state.wardrobeItems.length,
+                            )
                           else
                             const SizedBox.shrink(),
                           const SizedBox(height: 80),
@@ -131,11 +149,14 @@ class _CombineView extends StatelessWidget {
         child: BlocBuilder<CombineCubit, CombineState>(
           builder: (context, state) {
             final cubit = context.read<CombineCubit>();
+            final hasEnoughClothes = state.wardrobeItems.length >= 10;
+            final isDisabled = state.isGenerating || !hasEnoughClothes;
+            
             return PrimaryFilledButton(
               label: state.isGenerating
                   ? 'combinationGenerateLoading'.tr()
                   : 'combinationGenerateCta'.tr(),
-              onPressed: state.isGenerating
+              onPressed: isDisabled
                   ? null
                   : () => _onGenerate(context, state, cubit),
               isLoading: state.isGenerating,
@@ -146,9 +167,71 @@ class _CombineView extends StatelessWidget {
       ),
     );
   }
+
+  static Future<void> _showLimitExceededMessage(BuildContext context, {required bool isClothes}) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      final subscriptionService = SubscriptionService.instance();
+      final subscriptionInfo = await subscriptionService.getUserSubscriptionInfo(userId);
+      final limits = subscriptionInfo['limits'] as SubscriptionPlanLimits;
+      final currentCount = isClothes
+          ? subscriptionInfo['totalClothes'] as int
+          : subscriptionInfo['monthlyCombinationsUsed'] as int;
+      final maxCount = isClothes
+          ? limits.maxClothes
+          : limits.maxCombinationsPerMonth;
+
+      final message = isClothes
+          ? 'Kıyafet ekleme limitinize ulaştınız ($currentCount/$maxCount). Daha fazla kıyafet eklemek için planınızı yükseltin.'
+          : 'Aylık kombin limitinize ulaştınız ($currentCount/$maxCount). Daha fazla kombin oluşturmak için planınızı yükseltin.';
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Yükselt',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.subscription);
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Hata durumunda basit mesaj göster
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isClothes
+                ? 'Kıyafet ekleme limitinize ulaştınız. Planınızı yükseltin.'
+                : 'Aylık kombin limitinize ulaştınız. Planınızı yükseltin.'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
 }
 
 void _onGenerate(BuildContext context, CombineState state, CombineCubit cubit) {
+  // En az 10 kıyafet kontrolü
+  if (state.wardrobeItems.length < 10) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Kombin oluşturabilmek için garderobunuzda en az 10 kıyafet olmalı. Şu anda ${state.wardrobeItems.length} kıyafetiniz var.',
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+    return;
+  }
+
   final preference = state.preference;
   final missing = <String>[];
 
@@ -943,6 +1026,97 @@ class _WeatherMoodGauge extends StatelessWidget {
               ),
             )
             .toList(),
+      ),
+    );
+  }
+
+  static Future<void> _showLimitExceededMessage(BuildContext context, {required bool isClothes}) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      final subscriptionService = SubscriptionService.instance();
+      final subscriptionInfo = await subscriptionService.getUserSubscriptionInfo(userId);
+      final limits = subscriptionInfo['limits'] as SubscriptionPlanLimits;
+      final currentCount = isClothes
+          ? subscriptionInfo['totalClothes'] as int
+          : subscriptionInfo['monthlyCombinationsUsed'] as int;
+      final maxCount = isClothes
+          ? limits.maxClothes
+          : limits.maxCombinationsPerMonth;
+
+      final message = isClothes
+          ? 'Kıyafet ekleme limitinize ulaştınız ($currentCount/$maxCount). Daha fazla kıyafet eklemek için planınızı yükseltin.'
+          : 'Aylık kombin limitinize ulaştınız ($currentCount/$maxCount). Daha fazla kombin oluşturmak için planınızı yükseltin.';
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Yükselt',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.subscription);
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Hata durumunda basit mesaj göster
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isClothes
+                ? 'Kıyafet ekleme limitinize ulaştınız. Planınızı yükseltin.'
+                : 'Aylık kombin limitinize ulaştınız. Planınızı yükseltin.'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+}
+
+class _InsufficientClothesWarning extends StatelessWidget {
+  const _InsufficientClothesWarning({required this.currentCount});
+
+  final int currentCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final remaining = 10 - currentCount;
+
+    return AppSurfaceCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 48,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Yeterli Kıyafet Yok',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Kombin oluşturabilmek için garderobunuzda en az 10 kıyafet olmalı.\nŞu anda $currentCount kıyafetiniz var. ${remaining > 0 ? '$remaining kıyafet daha eklemeniz gerekiyor.' : ''}',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

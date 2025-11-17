@@ -19,6 +19,11 @@ class UserDataModel extends UserEntity {
     super.notificationEnabled,
     super.subscriptionStartDate,
     super.subscriptionEndDate,
+    super.subscriptionPeriodStartDate,
+    super.subscriptionPeriodEndDate,
+    super.subscriptionLastRenewalDate,
+    super.monthlyCombinationsUsed,
+    super.monthlyCombinationsResetDate,
   });
 
   factory UserDataModel.fromDocument(
@@ -56,6 +61,11 @@ class UserDataModel extends UserEntity {
       notificationEnabled: data['notificationEnabled'] as bool?,
       subscriptionStartDate: dateFromTimestamp(data['subscriptionStartDate']),
       subscriptionEndDate: dateFromTimestamp(data['subscriptionEndDate']),
+      subscriptionPeriodStartDate: dateFromTimestamp(data['subscriptionPeriodStartDate']),
+      subscriptionPeriodEndDate: dateFromTimestamp(data['subscriptionPeriodEndDate']),
+      subscriptionLastRenewalDate: dateFromTimestamp(data['subscriptionLastRenewalDate']),
+      monthlyCombinationsUsed: (data['monthlyCombinationsUsed'] as num?)?.toInt(),
+      monthlyCombinationsResetDate: dateFromTimestamp(data['monthlyCombinationsResetDate']),
     );
   }
 
@@ -78,11 +88,18 @@ class UserDataModel extends UserEntity {
       'notificationEnabled': notificationEnabled,
       'subscriptionStartDate': timestampFromDate(subscriptionStartDate),
       'subscriptionEndDate': timestampFromDate(subscriptionEndDate),
+      'subscriptionPeriodStartDate': timestampFromDate(subscriptionPeriodStartDate),
+      'subscriptionPeriodEndDate': timestampFromDate(subscriptionPeriodEndDate),
+      'subscriptionLastRenewalDate': timestampFromDate(subscriptionLastRenewalDate),
+      'monthlyCombinationsUsed': monthlyCombinationsUsed,
+      'monthlyCombinationsResetDate': timestampFromDate(monthlyCombinationsResetDate),
     };
 
     if (isNewUser) {
       map['registrationDate'] = FieldValue.serverTimestamp();
       map['totalClothes'] = 0;
+      map['monthlyCombinationsUsed'] = 0;
+      map['monthlyCombinationsResetDate'] = FieldValue.serverTimestamp();
     } else {
       map['registrationDate'] = timestampFromDate(registrationDate);
       if (totalClothes != null) {
@@ -114,6 +131,11 @@ class UserDataModel extends UserEntity {
     bool? notificationEnabled,
     DateTime? subscriptionStartDate,
     DateTime? subscriptionEndDate,
+    DateTime? subscriptionPeriodStartDate,
+    DateTime? subscriptionPeriodEndDate,
+    DateTime? subscriptionLastRenewalDate,
+    int? monthlyCombinationsUsed,
+    DateTime? monthlyCombinationsResetDate,
   }) {
     return UserDataModel(
       id: id ?? this.id,
@@ -132,6 +154,11 @@ class UserDataModel extends UserEntity {
       notificationEnabled: notificationEnabled ?? this.notificationEnabled,
       subscriptionStartDate: subscriptionStartDate ?? this.subscriptionStartDate,
       subscriptionEndDate: subscriptionEndDate ?? this.subscriptionEndDate,
+      subscriptionPeriodStartDate: subscriptionPeriodStartDate ?? this.subscriptionPeriodStartDate,
+      subscriptionPeriodEndDate: subscriptionPeriodEndDate ?? this.subscriptionPeriodEndDate,
+      subscriptionLastRenewalDate: subscriptionLastRenewalDate ?? this.subscriptionLastRenewalDate,
+      monthlyCombinationsUsed: monthlyCombinationsUsed ?? this.monthlyCombinationsUsed,
+      monthlyCombinationsResetDate: monthlyCombinationsResetDate ?? this.monthlyCombinationsResetDate,
     );
   }
 }

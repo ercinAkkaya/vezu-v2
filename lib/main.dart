@@ -70,7 +70,11 @@ Future<void> main() async {
   final sharedPreferences = await SharedPreferences.getInstance();
 
   // RevenueCat configuration
-  const revenueCatApiKey = 'test_AfcLmRKpIarroBHxoOoxGwKNtLI';
+  // TODO: RevenueCat Dashboard'dan doğru Android Public API Key'i alıp buraya ekleyin
+  // Dashboard: https://app.revenuecat.com -> Project Settings -> API Keys
+  const revenueCatApiKey = 'goog_ifBWZzvGcsbWBsIhLAcWaOHhgAG'; // Production anahtarı
+  // const revenueCatApiKey = 'test_YOUR_TEST_API_KEY_HERE'; // Test için
+  
   await Purchases.configure(
     PurchasesConfiguration(revenueCatApiKey),
   );

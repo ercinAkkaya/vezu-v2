@@ -5,6 +5,7 @@ import "package:bloc/bloc.dart";
 import "package:equatable/equatable.dart";
 import "package:vezu/core/base/base_image_picker_service.dart";
 import "package:vezu/core/base/base_permission_service.dart";
+import "package:vezu/core/services/subscription_service.dart";
 import "package:vezu/features/auth/presentation/cubit/auth_cubit.dart";
 import "package:vezu/features/wardrobe/domain/entities/clothing_item.dart";
 import "package:vezu/features/wardrobe/domain/errors/wardrobe_failure.dart";
@@ -251,11 +252,30 @@ class WardrobeCubit extends Cubit<WardrobeState> {
       return;
     }
 
+    // Limit kontrolü yap
+    final subscriptionService = SubscriptionService.instance();
+    final currentClothesCount = state.wardrobeItems.length;
+    final canUpload = await subscriptionService.canUploadClothes(
+      userId: uid,
+      currentClothesCount: currentClothesCount,
+    );
+
+    if (!canUpload) {
+      emit(
+        state.copyWith(
+          isAnalyzing: false,
+          shouldShowPaywall: true,
+        ),
+      );
+      return;
+    }
+
     emit(
       state.copyWith(
         isAnalyzing: true,
         resetSnackbar: true,
         resetAnalysisError: true,
+        resetPaywall: true,
       ),
     );
 
@@ -326,6 +346,10 @@ class WardrobeCubit extends Cubit<WardrobeState> {
 
   void clearSnackbarMessage() {
     emit(state.copyWith(resetSnackbar: true));
+  }
+
+  void clearPaywall() {
+    emit(state.copyWith(resetPaywall: true));
   }
 
   Future<void> openSettings() {

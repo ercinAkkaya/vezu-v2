@@ -18,6 +18,7 @@ class CombineState extends Equatable {
     this.isSavingPlan = false,
     this.hasSavedPlan = false,
     this.errorMessage,
+    this.shouldShowPaywall = false,
   });
 
   final bool isWardrobeLoading;
@@ -28,6 +29,7 @@ class CombineState extends Equatable {
   final bool isSavingPlan;
   final bool hasSavedPlan;
   final String? errorMessage;
+  final bool shouldShowPaywall;
 
   CombineState copyWith({
     bool? isWardrobeLoading,
@@ -39,6 +41,8 @@ class CombineState extends Equatable {
     bool? hasSavedPlan,
     String? errorMessage,
     bool resetError = false,
+    bool? shouldShowPaywall,
+    bool resetPaywall = false,
   }) {
     return CombineState(
       isWardrobeLoading: isWardrobeLoading ?? this.isWardrobeLoading,
@@ -49,6 +53,7 @@ class CombineState extends Equatable {
       isSavingPlan: isSavingPlan ?? this.isSavingPlan,
       hasSavedPlan: hasSavedPlan ?? this.hasSavedPlan,
       errorMessage: resetError ? null : (errorMessage ?? this.errorMessage),
+      shouldShowPaywall: resetPaywall ? false : (shouldShowPaywall ?? this.shouldShowPaywall),
     );
   }
 
@@ -62,5 +67,6 @@ class CombineState extends Equatable {
     isSavingPlan,
     hasSavedPlan,
     errorMessage,
+    shouldShowPaywall,
   ];
 }

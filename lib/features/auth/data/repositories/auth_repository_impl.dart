@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:vezu/core/services/subscription_service.dart';
 import 'package:vezu/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:vezu/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:vezu/features/auth/data/models/user_data_model.dart';
@@ -82,6 +83,16 @@ class AuthRepositoryImpl implements AuthRepository {
         userModel,
         isNewUser: existingUser == null,
       );
+
+      // Yeni kullanıcı ise free plan'ı initialize et
+      if (existingUser == null) {
+        await SubscriptionService.instance().initializeFreePlan(firebaseUser.uid);
+      } else {
+        // Mevcut kullanıcı ise RevenueCat'ten subscription senkronizasyonu yap
+        await SubscriptionService.instance().syncSubscriptionFromRevenueCat(
+          firebaseUser.uid,
+        );
+      }
 
       await _localDataSource.cacheUserId(userModel.id);
 

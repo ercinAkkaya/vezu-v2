@@ -1,8 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vezu/core/models/subscription_plan_limits.dart';
+import 'package:vezu/core/navigation/app_router.dart';
 import 'package:vezu/core/services/image_picker_service.dart';
 import 'package:vezu/core/services/permission_service.dart';
+import 'package:vezu/core/services/subscription_service.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:vezu/features/wardrobe/domain/usecases/add_clothing_item.dart';
 import 'package:vezu/features/wardrobe/domain/usecases/watch_wardrobe_items.dart';
@@ -70,7 +74,8 @@ class _WardrobeViewState extends State<_WardrobeView> {
           previous.permissionDenied != current.permissionDenied ||
           previous.snackbarMessageKey != current.snackbarMessageKey ||
           previous.shouldShowPreview != current.shouldShowPreview ||
-          previous.selectedImagePath != current.selectedImagePath,
+          previous.selectedImagePath != current.selectedImagePath ||
+          previous.shouldShowPaywall != current.shouldShowPaywall,
       listener: _handleStateUpdates,
       builder: (context, state) {
         final uid = context.watch<AuthCubit>().state.user?.id;
@@ -165,6 +170,66 @@ class _WardrobeViewState extends State<_WardrobeView> {
     if (state.shouldShowPreview && state.selectedImagePath != null) {
       _showPreviewSheet(context);
       cubit.previewShown();
+    }
+
+    if (state.shouldShowPaywall) {
+      _showLimitExceededMessage(context, isClothes: true);
+      // Snackbar gösterildikten sonra paywall'ı aç
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (context.mounted) {
+          Navigator.of(context).pushNamed(AppRoutes.subscription);
+          cubit.clearPaywall();
+        }
+      });
+    }
+  }
+
+  Future<void> _showLimitExceededMessage(BuildContext context, {required bool isClothes}) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      final subscriptionService = SubscriptionService.instance();
+      final subscriptionInfo = await subscriptionService.getUserSubscriptionInfo(userId);
+      final limits = subscriptionInfo['limits'] as SubscriptionPlanLimits;
+      final currentCount = isClothes
+          ? subscriptionInfo['totalClothes'] as int
+          : subscriptionInfo['monthlyCombinationsUsed'] as int;
+      final maxCount = isClothes
+          ? limits.maxClothes
+          : limits.maxCombinationsPerMonth;
+
+      final message = isClothes
+          ? 'Kıyafet ekleme limitinize ulaştınız ($currentCount/$maxCount). Daha fazla kıyafet eklemek için planınızı yükseltin.'
+          : 'Aylık kombin limitinize ulaştınız ($currentCount/$maxCount). Daha fazla kombin oluşturmak için planınızı yükseltin.';
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Yükselt',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.of(context).pushNamed(AppRoutes.subscription);
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Hata durumunda basit mesaj göster
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isClothes
+                ? 'Kıyafet ekleme limitinize ulaştınız. Planınızı yükseltin.'
+                : 'Aylık kombin limitinize ulaştınız. Planınızı yükseltin.'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 

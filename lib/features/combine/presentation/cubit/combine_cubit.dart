@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:vezu/core/services/subscription_service.dart';
 import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:vezu/features/combine/domain/entities/combination_plan.dart';
 import 'package:vezu/features/combine/domain/entities/combination_preference.dart';
@@ -117,11 +118,34 @@ class CombineCubit extends Cubit<CombineState> {
     if (state.isGenerating) {
       return;
     }
-    if (state.wardrobeItems.isEmpty) {
-      emit(state.copyWith(errorMessage: 'Garderobunda en az 1 parça olmalı.'));
+    if (state.wardrobeItems.length < 10) {
+      emit(state.copyWith(
+        errorMessage: 'Kombin oluşturabilmek için garderobunuzda en az 10 kıyafet olmalı. Şu anda ${state.wardrobeItems.length} kıyafetiniz var.',
+      ));
       return;
     }
-    emit(state.copyWith(isGenerating: true, resetError: true));
+
+    final userId = _authCubit.state.user?.id;
+    if (userId == null) {
+      emit(state.copyWith(errorMessage: 'Kullanıcı bilgisi bulunamadı.'));
+      return;
+    }
+
+    // Limit kontrolü yap
+    final subscriptionService = SubscriptionService.instance();
+    final canCreate = await subscriptionService.canCreateCombination(userId: userId);
+
+    if (!canCreate) {
+      emit(
+        state.copyWith(
+          isGenerating: false,
+          shouldShowPaywall: true,
+        ),
+      );
+      return;
+    }
+
+    emit(state.copyWith(isGenerating: true, resetError: true, resetPaywall: true));
     try {
       final plan = await _generateCombinationUseCase(
         GenerateCombinationParams(
@@ -129,6 +153,10 @@ class CombineCubit extends Cubit<CombineState> {
           wardrobeItems: state.wardrobeItems,
         ),
       );
+
+      // Kombin oluşturuldu, sayacı artır
+      await subscriptionService.incrementCombinationCount(userId);
+
       emit(
         state.copyWith(
           isGenerating: false,
@@ -139,6 +167,10 @@ class CombineCubit extends Cubit<CombineState> {
     } on Exception catch (error) {
       emit(state.copyWith(isGenerating: false, errorMessage: error.toString()));
     }
+  }
+
+  void clearPaywall() {
+    emit(state.copyWith(resetPaywall: true));
   }
 
   @override
