@@ -13,6 +13,7 @@ class GenerateCombinationUseCase {
     return _repository.generateCombination(
       preference: params.preference,
       wardrobeItems: params.wardrobeItems,
+      languageCode: params.languageCode,
     );
   }
 }
@@ -21,12 +22,14 @@ class GenerateCombinationParams extends Equatable {
   const GenerateCombinationParams({
     required this.preference,
     required this.wardrobeItems,
+    this.languageCode = 'en',
   });
 
   final CombinationPreference preference;
   final List<ClothingItem> wardrobeItems;
+  final String languageCode;
 
   @override
-  List<Object?> get props => [preference, wardrobeItems];
+  List<Object?> get props => [preference, wardrobeItems, languageCode];
 }
 

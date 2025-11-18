@@ -19,6 +19,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     required String uid,
     required String category,
     required String type,
+    String languageCode = 'en',
   }) async {
     if (!imageFile.existsSync()) {
       throw WardrobeFailure('Selected image file not found.');
@@ -30,6 +31,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         uid: uid,
         category: category,
         type: type,
+        languageCode: languageCode,
       );
 
       final metadataModel = ClothingMetadataModel.fromMap(result.metadataMap);

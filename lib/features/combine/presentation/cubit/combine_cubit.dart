@@ -114,7 +114,7 @@ class CombineCubit extends Cubit<CombineState> {
     );
   }
 
-  Future<void> generateCombination() async {
+  Future<void> generateCombination({String languageCode = 'en'}) async {
     if (state.isGenerating) {
       return;
     }
@@ -151,6 +151,7 @@ class CombineCubit extends Cubit<CombineState> {
         GenerateCombinationParams(
           preference: state.preference,
           wardrobeItems: state.wardrobeItems,
+          languageCode: languageCode,
         ),
       );
 

@@ -60,6 +60,8 @@
 	<string>Uygulama, seçtiğin görselleri kaydedebilmek için fotoğraf arşivine içerik eklemelidir.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Dolabına yeni parçalar eklerken kamera yoluyla fotoğraf çekebilmemiz gerekiyor.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Önemli güncellemeler ve kombin önerileri hakkında seni bilgilendirmek için bildirimlere ihtiyaç duyuyoruz.</string>
 	<!-- Google Sign-In -->
 	<key>CFBundleURLTypes</key>
 	<array>

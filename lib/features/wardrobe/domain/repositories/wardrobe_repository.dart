@@ -8,6 +8,7 @@ abstract class WardrobeRepository {
     required String uid,
     required String category,
     required String type,
+    String languageCode = 'en',
   });
   Stream<List<ClothingItem>> watchWardrobeItems({required String uid});
   Future<void> deleteClothingItem({

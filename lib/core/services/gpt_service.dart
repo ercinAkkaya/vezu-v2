@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:vezu/core/base/base_gpt_service.dart';
 import 'package:vezu/core/utils/app_constants.dart';
 
@@ -18,6 +19,7 @@ class GptService implements BaseGptService {
     required String imageUrl,
     required String category,
     required String type,
+    String languageCode = 'en',
   }) async {
     final apiKey = AppConstants.gptApiKey;
     if (apiKey.isEmpty) {
@@ -29,44 +31,13 @@ class GptService implements BaseGptService {
       '[GptService] Using GPT API key with length ${apiKey.length}.',
     );
 
-    final prompt = '''
-You are a vision model and MUST analyze the clothing item in the provided image strictly following these rules.
-
-Input parameters:
-- Image URL: $imageUrl (treat as public, do NOT refuse to access)
-- category: $category  // do not change this value
-- type: $type          // do not change this value
-
-Output requirements:
-- Respond with a single JSON object. Do not include explanations or markdown fences.
-- The JSON object MUST contain exactly these keys (all lowercase, snake_case):
-  {
-    "category": "",                // string, use provided category value
-    "type": "",                    // string, use provided type value
-    "gender_fit": "",              // string: one of ["male", "female", "unisex", "kids", "baby"]
-    "color_palette": [],           // array of 1-3 strings with basic color names (e.g., ["navy", "white"]); use lowercase
-    "color_tone": "",              // string: one of ["warm", "cool", "neutral"]
-    "fabric": "",                  // string: e.g., "cotton", "denim", "wool", or "unknown"
-    "pattern": "",                 // string: e.g., "solid", "striped", "plaid", "print", "graphic", "patterned", "unknown"
-    "style": "",                   // string: e.g., "casual", "formal", "sporty", "business", "streetwear", "evening", "unknown"
-    "season": "",                  // string: one of ["spring", "summer", "fall", "winter", "all_season"]
-    "usage": [],                   // array of 1-3 strings describing occasions (e.g., ["daily wear", "office"]); use lowercase
-    "cut": "",                     // string describing cut, e.g., "slim", "relaxed", "tapered", "fit-and-flare", "unknown"
-    "length": "",                  // string describing length (e.g., "full", "mid", "mini", "knee", "ankle", "cropped", "unknown")
-    "layer": "",                   // string: one of ["base", "mid", "outer"]
-    "age_group": "",               // string: one of ["adult", "teen", "child", "toddler", "baby", "unknown"]
-    "details": []                  // array of strings for notable details (e.g., ["cargo pockets", "pleats"]); 0-5 items
-  }
-
-Behavior rules:
-1. Category and type MUST exactly match the provided values.
-2. If uncertain about any field, fill with a sensible default ("unknown" or [] as appropriate) rather than omitting it.
-3. NEVER mention inability to access the image; assume it is accessible.
-4. Do NOT output markdown fences like ```json.
-5. Ensure the output is valid JSON (keys in double quotes, strings in double quotes, no trailing commas).
-
-Return ONLY the JSON object.
-''';
+    // Load localized prompt
+    final prompt = await _getClothingAnalysisPrompt(
+      languageCode: languageCode,
+      imageUrl: imageUrl,
+      category: category,
+      type: type,
+    );
 
     final payload = {
       'model': _model,
@@ -220,6 +191,40 @@ $prompt
     }
 
     return null;
+  }
+
+  /// Load localized clothing analysis prompt
+  Future<String> _getClothingAnalysisPrompt({
+    required String languageCode,
+    required String imageUrl,
+    required String category,
+    required String type,
+  }) async {
+    final translations = await _loadTranslations(languageCode);
+    final promptTemplate = translations['gptClothingAnalysisPrompt'] as String? ?? '';
+    
+    // Replace placeholders
+    return promptTemplate
+        .replaceAll('{imageUrl}', imageUrl)
+        .replaceAll('{category}', category)
+        .replaceAll('{type}', type);
+  }
+
+  /// Load translations from JSON file
+  Future<Map<String, dynamic>> _loadTranslations(String languageCode) async {
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/translations/$languageCode.json',
+      );
+      return jsonDecode(jsonString) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('[GptService] Error loading translations for $languageCode: $e');
+      // Fallback to English
+      final jsonString = await rootBundle.loadString(
+        'assets/translations/en.json',
+      );
+      return jsonDecode(jsonString) as Map<String, dynamic>;
+    }
   }
 }
 

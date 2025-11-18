@@ -226,7 +226,7 @@ class WardrobeCubit extends Cubit<WardrobeState> {
     );
   }
 
-  Future<void> startAnalysis({required String? uid}) async {
+  Future<void> startAnalysis({required String? uid, String languageCode = 'en'}) async {
     if (state.selectedImagePath == null || state.isAnalyzing) return;
 
     if (uid == null || uid.isEmpty) {
@@ -287,6 +287,7 @@ class WardrobeCubit extends Cubit<WardrobeState> {
           uid: uid,
           category: category,
           type: type,
+          languageCode: languageCode,
         ),
       );
 

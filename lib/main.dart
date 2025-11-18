@@ -49,12 +49,15 @@ import 'package:vezu/features/wardrobe/domain/usecases/delete_clothing_item.dart
 import 'package:vezu/features/wardrobe/domain/usecases/watch_wardrobe_items.dart';
 import 'firebase_options.dart';
 import 'package:vezu/core/services/location_service.dart';
+import 'package:vezu/core/services/notification_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // Background notification handler'ı çağır
+  await firebaseMessagingBackgroundHandler(message);
 }
 
 Future<void> main() async {
@@ -65,6 +68,9 @@ Future<void> main() async {
   if (!kIsWeb) {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     await _initializePushNotifications();
+    
+    // Notification Service'i başlat
+    await NotificationService.instance.initialize();
   }
   await EasyLocalization.ensureInitialized();
   final sharedPreferences = await SharedPreferences.getInstance();

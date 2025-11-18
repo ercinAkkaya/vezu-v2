@@ -3,6 +3,7 @@ abstract class BaseGptService {
     required String imageUrl,
     required String category,
     required String type,
+    String languageCode = 'en',
   });
 
   Future<String> generateCombination({

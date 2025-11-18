@@ -12,6 +12,7 @@ abstract class WardrobeRemoteDataSource {
     required String uid,
     required String category,
     required String type,
+    String languageCode = 'en',
   });
   Stream<List<ClothingItemModel>> watchWardrobeItems(String uid);
   Future<void> deleteClothingItem({
@@ -40,6 +41,7 @@ class WardrobeRemoteDataSourceImpl implements WardrobeRemoteDataSource {
     required String uid,
     required String category,
     required String type,
+    String languageCode = 'en',
   }) async {
     final docRef = _firestore
         .collection('users')
@@ -59,6 +61,7 @@ class WardrobeRemoteDataSourceImpl implements WardrobeRemoteDataSource {
       imageUrl: imageUrl,
       category: category,
       type: type,
+      languageCode: languageCode,
     );
 
     final sanitizedMetadata = Map<String, dynamic>.from(metadataMap)

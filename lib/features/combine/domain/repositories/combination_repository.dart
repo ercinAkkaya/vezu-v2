@@ -6,6 +6,7 @@ abstract class CombinationRepository {
   Future<CombinationPlan> generateCombination({
     required CombinationPreference preference,
     required List<ClothingItem> wardrobeItems,
+    String languageCode = 'en',
   });
 }
 

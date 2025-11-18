@@ -15,6 +15,7 @@ class AddClothingItemUseCase {
       uid: params.uid,
       category: params.category,
       type: params.type,
+      languageCode: params.languageCode,
     );
   }
 }
@@ -25,14 +26,16 @@ class AddClothingItemParams extends Equatable {
     required this.uid,
     required this.category,
     required this.type,
+    this.languageCode = 'en',
   });
 
   final File imageFile;
   final String uid;
   final String category;
   final String type;
+  final String languageCode;
 
   @override
-  List<Object?> get props => [imageFile.path, uid, category, type];
+  List<Object?> get props => [imageFile.path, uid, category, type, languageCode];
 }
 

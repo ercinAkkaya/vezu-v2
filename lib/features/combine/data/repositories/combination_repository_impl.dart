@@ -18,12 +18,14 @@ class CombinationRepositoryImpl implements CombinationRepository {
   Future<CombinationPlan> generateCombination({
     required CombinationPreference preference,
     required List<ClothingItem> wardrobeItems,
+    String languageCode = 'en',
   }) async {
     final wardrobePayload = WardrobePayloadBuilder.build(wardrobeItems);
 
-    final prompt = CombinationPromptBuilder.buildPrompt(
+    final prompt = await CombinationPromptBuilder.buildPrompt(
       preference: preference,
       wardrobePayload: wardrobePayload,
+      languageCode: languageCode,
     );
 
     final responseText = await _gptService.generateCombination(

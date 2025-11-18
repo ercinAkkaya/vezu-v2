@@ -294,7 +294,10 @@ class _WardrobeViewState extends State<_WardrobeView> {
           },
           onAnalyze: () {
             final uid = context.read<AuthCubit>().state.user?.id;
-            context.read<WardrobeCubit>().startAnalysis(uid: uid);
+            context.read<WardrobeCubit>().startAnalysis(
+              uid: uid,
+              languageCode: context.locale.languageCode,
+            );
           },
         ),
       ),

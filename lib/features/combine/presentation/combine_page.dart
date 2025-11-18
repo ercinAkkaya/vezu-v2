@@ -255,7 +255,7 @@ void _onGenerate(BuildContext context, CombineState state, CombineCubit cubit) {
     return;
   }
 
-  cubit.generateCombination();
+  cubit.generateCombination(languageCode: context.locale.languageCode);
 }
 
 Future<void> _onSavePlan(BuildContext context) async {
