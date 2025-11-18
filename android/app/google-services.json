@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "439217544713-vapqn8e2ktuaejain4crug75rj4qepga.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.appistry.vezu",
+            "certificate_hash": "7f1b878709e4a8f5163637c1b883f6c740bb6ce7"
+          }
+        },
+        {
           "client_id": "439217544713-crtf1pp0t57j3ofkpihvmoldc4e03c1r.apps.googleusercontent.com",
           "client_type": 3
         }

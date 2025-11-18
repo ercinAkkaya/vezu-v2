@@ -1,13 +1,16 @@
 import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:vezu/core/components/app_surface_card.dart';
 import 'package:vezu/core/components/paywall_plan_card.dart';
 import 'package:vezu/core/services/revenuecat_service.dart';
 import 'package:vezu/core/services/subscription_service.dart';
+import 'package:vezu/features/auth/presentation/cubit/auth_cubit.dart';
 
 import '../../../core/components/paywall_billing_toggle.dart';
 
@@ -437,19 +440,83 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
       final package = _getPackageForPlan(planId);
       if (package != null) {
-        await Purchases.purchasePackage(package);
-        // Satın alma başarılı, subscription'ı senkronize et
-        await SubscriptionService.instance().syncSubscriptionFromRevenueCat(userId);
+        // Satın alma işlemini yap
+        final purchaseResult = await Purchases.purchasePackage(package);
+        debugPrint('[SubscriptionPage] Purchase completed, customerInfo: ${purchaseResult.customerInfo.entitlements.active.length} active entitlements');
+        
+        // RevenueCat'in entitlement'ı güncellemesi için kısa bir gecikme
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        // Satın alma başarılı, subscription'ı senkronize et (retry ile)
+        String? syncedPlanId;
+        for (int i = 0; i < 3; i++) {
+          syncedPlanId = await SubscriptionService.instance().syncSubscriptionFromRevenueCat(userId);
+          if (syncedPlanId != 'free') {
+            debugPrint('[SubscriptionPage] ✅ Subscription synced successfully: $syncedPlanId');
+            break;
+          }
+          if (i < 2) {
+            debugPrint('[SubscriptionPage] ⏳ Retrying sync... (attempt ${i + 2}/3)');
+            await Future.delayed(const Duration(milliseconds: 1000));
+          }
+        }
+        
+        // Kullanıcı bilgilerini yenile (abonelik bilgisi güncellensin)
         if (mounted) {
+          await context.read<AuthCubit>().refreshUser();
+          // Sayfayı kapat
           Navigator.of(context).pop();
+          // Başarı mesajını önceki sayfada göster (kısa gecikme ile)
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('subscriptionSuccess'.tr()),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
         }
       } else {
         // Fallback: RevenueCat UI kullan
         await RevenueCatUI.presentPaywall();
-        // Satın alma başarılı, subscription'ı senkronize et
-        await SubscriptionService.instance().syncSubscriptionFromRevenueCat(userId);
+        
+        // RevenueCat'in entitlement'ı güncellemesi için kısa bir gecikme
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        // Satın alma başarılı, subscription'ı senkronize et (retry ile)
+        String? syncedPlanId;
+        for (int i = 0; i < 3; i++) {
+          syncedPlanId = await SubscriptionService.instance().syncSubscriptionFromRevenueCat(userId);
+          if (syncedPlanId != 'free') {
+            debugPrint('[SubscriptionPage] ✅ Subscription synced successfully: $syncedPlanId');
+            break;
+          }
+          if (i < 2) {
+            debugPrint('[SubscriptionPage] ⏳ Retrying sync... (attempt ${i + 2}/3)');
+            await Future.delayed(const Duration(milliseconds: 1000));
+          }
+        }
+        
+        // Kullanıcı bilgilerini yenile (abonelik bilgisi güncellensin)
         if (mounted) {
+          await context.read<AuthCubit>().refreshUser();
+          // Sayfayı kapat
           Navigator.of(context).pop();
+          // Başarı mesajını önceki sayfada göster (kısa gecikme ile)
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('subscriptionSuccess'.tr()),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
         }
       }
     } on PurchasesErrorCode catch (e) {

@@ -54,6 +54,8 @@
   "profileGenderFemale": "Female",
   "profileGenderOther": "Other",
   "profileAgeSuffix": "{age} yrs",
+  "profileDefaultName": "User",
+  "profileDefaultEmail": "No email",
   "profileEditFirstName": "First name",
   "profileEditFirstNameHint": "Enter first name",
   "profileEditLastName": "Last name",
@@ -397,6 +399,7 @@
   "subscriptionGuaranteeFlexible": "Change or cancel whenever you like.",
   "subscriptionFooterNote": "Prices may vary based on local taxes. Purchases are billed through your App Store or Play Store account.",
   "subscriptionSnackComingSoon": "{0} plan flow is coming very soon.",
+  "subscriptionSuccess": "Subscription successfully activated! 🎉",
   "splashFeatureAiCombos": "AI outfit ideas",
   "splashFeatureSmartWardrobe": "Smart wardrobe",
   "splashFeatureStyleTips": "Style insights"

@@ -54,6 +54,8 @@
   "profileGenderFemale": "Kadın",
   "profileGenderOther": "Diğer",
   "profileAgeSuffix": "{age} yaş",
+  "profileDefaultName": "Kullanıcı",
+  "profileDefaultEmail": "E-posta girilmedi",
   "profileEditFirstName": "Ad",
   "profileEditFirstNameHint": "Adını gir",
   "profileEditLastName": "Soyad",
@@ -397,6 +399,7 @@
   "subscriptionGuaranteeFlexible": "Planını istediğin zaman değiştir ya da iptal et.",
   "subscriptionFooterNote": "Abonelik ücretleri yerel vergilere göre değişebilir. Ödemeler App Store veya Play Store hesabından tahsil edilir.",
   "subscriptionSnackComingSoon": "{0} plan akışı çok yakında hazır olacak.",
+  "subscriptionSuccess": "Abonelik başarıyla aktifleştirildi! 🎉",
   "splashFeatureAiCombos": "AI kombinler",
   "splashFeatureSmartWardrobe": "Akıllı gardırop",
   "splashFeatureStyleTips": "Stil önerileri"

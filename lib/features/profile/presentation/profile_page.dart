@@ -131,9 +131,8 @@ class ProfilePage extends StatelessWidget {
             },
             builder: (context, authState) {
               final user = authState.user;
-              // TEMP: Hard-coded values for testing; will be reverted later
-              final displayName = 'Ali';
-              final email = 'ali@gmail.com';
+              final displayName = _resolveDisplayName(user) ?? 'profileDefaultName'.tr();
+              final email = user?.email ?? 'profileDefaultEmail'.tr();
               final avatarUrl = user?.profilePhotoUrl;
               final outfitsCount = (user?.totalOutfitsCreated ?? 0).toString();
               final totalClothes = (user?.totalClothes ?? 0).toString();
@@ -441,11 +440,17 @@ class ProfilePage extends StatelessWidget {
   }
 
   static SubscriptionPlan _subscriptionPlanFromString(String? value) {
-    switch (value?.toLowerCase()) {
+    if (value == null) return SubscriptionPlan.free;
+    
+    switch (value.toLowerCase()) {
+      case 'premium':
       case 'monthly':
         return SubscriptionPlan.monthly;
+      case 'pro':
+      case 'pro_yearly':
       case 'yearly':
         return SubscriptionPlan.yearly;
+      case 'free':
       default:
         return SubscriptionPlan.free;
     }

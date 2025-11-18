@@ -1,6 +1,10 @@
 import "package:easy_localization/easy_localization.dart";
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:vezu/core/components/primary_filled_button.dart";
+import "package:vezu/core/services/subscription_service.dart";
+import "package:vezu/features/auth/presentation/cubit/auth_cubit.dart";
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -118,6 +122,59 @@ class _SettingsViewState extends State<_SettingsView> {
             },
             label: 'settingsSave'.tr(),
           ),
+          // Debug: Abonelik test butonu (sadece debug modda)
+          if (kDebugMode) ...[
+            const SizedBox(height: 32),
+            const Divider(),
+            const SizedBox(height: 16),
+            Text(
+              'Debug Tools',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () async {
+                final user = context.read<AuthCubit>().state.user;
+                if (user == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Kullanıcı bulunamadı')),
+                  );
+                  return;
+                }
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Abonelik senkronizasyonu başlatılıyor...')),
+                );
+
+                try {
+                  await SubscriptionService.instance().syncSubscriptionFromRevenueCat(user.id);
+                  await context.read<AuthCubit>().refreshUser();
+                  
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('✅ Abonelik senkronizasyonu tamamlandı!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('❌ Hata: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Abonelik Senkronizasyonu Test Et'),
+            ),
+          ],
         ],
       ),
     );

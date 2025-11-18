@@ -53,8 +53,7 @@ class _HomeView extends StatelessWidget {
               builder: (context, state) {
                 final authState = context.watch<AuthCubit>().state;
                 final user = authState.user;
-                // TEMP: Hard-coded name for testing; will be reverted later
-                final displayName = 'Ali';
+                final displayName = user?.firstName ?? user?.email?.split('@').first ?? 'User';
                 final avatarUrl = user?.profilePhotoUrl ?? state.avatarUrl;
 
                 final weatherSection = _buildWeatherSection(context, state);
