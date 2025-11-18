@@ -64,6 +64,8 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/png/vezu.png"
   adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/png/vezu.png"
+  remove_alpha_ios: true
 
 
 dev_dependencies:
