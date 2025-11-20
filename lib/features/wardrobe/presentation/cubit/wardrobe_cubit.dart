@@ -82,6 +82,19 @@ class WardrobeCubit extends Cubit<WardrobeState> {
 
   void initialize(String? uid) {
     if (uid == null || uid.isEmpty) {
+      // User logged out - cleanup
+      _currentUserId = null;
+      _wardrobeSubscription?.cancel();
+      _wardrobeSubscription = null;
+      emit(
+        state.copyWith(
+          isLoadingWardrobe: false,
+          clearActiveFilter: true,
+          searchQuery: '',
+          wardrobeItems: const <ClothingItem>[],
+          visibleItems: const <ClothingItem>[],
+        ),
+      );
       return;
     }
     if (_currentUserId == uid) {

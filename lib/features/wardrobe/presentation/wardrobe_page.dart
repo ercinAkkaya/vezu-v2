@@ -49,6 +49,7 @@ class _WardrobeView extends StatefulWidget {
 class _WardrobeViewState extends State<_WardrobeView> {
   final TextEditingController _searchController = TextEditingController();
   String? _previousSelectedImagePath;
+  String? _lastUserId;
 
   @override
   void initState() {
@@ -56,6 +57,7 @@ class _WardrobeViewState extends State<_WardrobeView> {
     _searchController.addListener(_handleSearch);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final uid = context.read<AuthCubit>().state.user?.id;
+      _lastUserId = uid;
       context.read<WardrobeCubit>().initialize(uid);
     });
   }
@@ -78,8 +80,17 @@ class _WardrobeViewState extends State<_WardrobeView> {
           previous.shouldShowPaywall != current.shouldShowPaywall,
       listener: _handleStateUpdates,
       builder: (context, state) {
-        final uid = context.watch<AuthCubit>().state.user?.id;
-        context.read<WardrobeCubit>().initialize(uid);
+        // Check if user has logged out
+        final currentUserId = context.watch<AuthCubit>().state.user?.id;
+        if (_lastUserId != currentUserId) {
+          _lastUserId = currentUserId;
+          // User changed (logged out or switched account)
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              context.read<WardrobeCubit>().initialize(currentUserId);
+            }
+          });
+        }
 
         if (_searchController.text != state.searchQuery) {
           _searchController.text = state.searchQuery;

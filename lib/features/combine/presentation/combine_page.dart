@@ -40,7 +40,10 @@ class _CombineView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: BlocConsumer<CombineCubit, CombineState>(
           listener: (context, state) {
@@ -52,7 +55,6 @@ class _CombineView extends StatelessWidget {
             }
             if (state.shouldShowPaywall) {
               _showLimitExceededMessage(context, isClothes: false);
-              // Snackbar gösterildikten sonra paywall'ı aç
               Future.delayed(const Duration(milliseconds: 500), () {
                 if (context.mounted) {
                   Navigator.of(context).pushNamed(AppRoutes.subscription);
@@ -70,29 +72,73 @@ class _CombineView extends StatelessWidget {
               children: [
                 CustomScrollView(
                   slivers: [
+                    // Modern App Bar
                     SliverAppBar(
                       floating: true,
                       snap: true,
-                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                      backgroundColor: Colors.transparent,
                       elevation: 0,
                       leading: Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back_rounded),
-                          onPressed: () => Navigator.of(context).pop(),
-                          style: IconButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.surfaceContainerHighest,
-                            foregroundColor: Theme.of(context).colorScheme.onSurface,
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.colorScheme.outline.withOpacity(0.2),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_rounded),
+                            onPressed: () => Navigator.of(context).pop(),
+                            color: theme.colorScheme.onSurface,
+                            iconSize: 20,
                           ),
                         ),
                       ),
                     ),
+                    
+                    // Hero Header
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'combineHeaderTitle'.tr(),
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -1,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'combineHeaderDescription'.tr(),
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
                     SliverPadding(
                       padding: const EdgeInsets.only(
                         left: 20,
                         right: 20,
-                        top: 8,
                         bottom: 28,
                       ),
                       sliver: SliverList.list(
@@ -110,10 +156,12 @@ class _CombineView extends StatelessWidget {
                           ),
                           const SizedBox(height: 24),
                           if (state.isWardrobeLoading)
-                            const Center(
+                            Center(
                               child: Padding(
-                                padding: EdgeInsets.all(32),
-                                child: CircularProgressIndicator(),
+                                padding: const EdgeInsets.all(32),
+                                child: CircularProgressIndicator(
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
                             )
                           else if (state.plan != null)
@@ -203,7 +251,6 @@ class _CombineView extends StatelessWidget {
         );
       }
     } catch (e) {
-      // Hata durumunda basit mesaj göster
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -219,7 +266,6 @@ class _CombineView extends StatelessWidget {
 }
 
 void _onGenerate(BuildContext context, CombineState state, CombineCubit cubit) {
-  // En az 10 kıyafet kontrolü
   if (state.wardrobeItems.length < 10) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -278,22 +324,23 @@ class _GeneratingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
     return IgnorePointer(
       ignoring: false,
       child: Container(
-        color: Colors.black.withValues(alpha: 0.45),
+        color: Colors.black.withOpacity(0.5),
         alignment: Alignment.center,
         child: Container(
           width: 280,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 32,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
@@ -301,18 +348,18 @@ class _GeneratingOverlay extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                width: 44,
-                height: 44,
+                width: 48,
+                height: 48,
                 child: CircularProgressIndicator(
                   strokeWidth: 4,
                   color: theme.colorScheme.primary,
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
               Text(
                 'combineGeneratingTitle'.tr(),
                 textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -321,7 +368,7 @@ class _GeneratingOverlay extends StatelessWidget {
                 'combineGeneratingSubtitle'.tr(),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
                   height: 1.4,
                 ),
               ),
@@ -422,7 +469,7 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
       );
 
       final snapshot = _WeatherSnapshot(
-        temperature: '${weather.temperatureC.round()}°C',
+        temperature: '${weather.temperatureC.round()}°',
         temperatureValue: weather.temperatureC,
         humidity: '${weather.humidityPercent}%',
         wind: _formatWind(weather.windSpeedKmh),
@@ -465,20 +512,24 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: _getWeatherGradient(),
+        ),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
+            color: _getWeatherGradient()[0].withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -489,39 +540,61 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'combineWeatherCardTitle'.tr(),
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.onSurface,
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              _getWeatherIcon(),
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'combineWeatherCardTitle'.tr(),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Text(
                           'combineWeatherCardSubtitle'.tr(),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.9),
                             height: 1.3,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Transform.scale(
-                    scale: 0.85,
-                    child: Switch.adaptive(
-                      value: _useLiveWeather,
-                      onChanged: (value) => _toggleLiveWeather(value),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Transform.scale(
+                      scale: 0.8,
+                      child: Switch.adaptive(
+                        value: _useLiveWeather,
+                        onChanged: (value) => _toggleLiveWeather(value),
+                        activeColor: Colors.white,
+                        activeTrackColor: Colors.white.withOpacity(0.3),
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 280),
+                duration: const Duration(milliseconds: 300),
                 child: _useLiveWeather
-                    ? _buildLiveWeatherPanel(theme)
+                    ? _buildLiveWeatherPanel()
                     : _buildSeasonPicker(context),
               ),
             ],
@@ -529,6 +602,59 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
         ),
       ),
     );
+  }
+
+  List<Color> _getWeatherGradient() {
+    if (_conditionKind == null || !_useLiveWeather) {
+      return [
+        const Color(0xFF3B82F6),
+        const Color(0xFF60A5FA),
+      ];
+    }
+
+    switch (_conditionKind!) {
+      case WeatherCondition.clear:
+        return [const Color(0xFFF59E0B), const Color(0xFFFBBF24)];
+      case WeatherCondition.partlyCloudy:
+        return [const Color(0xFF6B7280), const Color(0xFF9CA3AF)];
+      case WeatherCondition.rain:
+      case WeatherCondition.rainShowers:
+        return [const Color(0xFF3B82F6), const Color(0xFF60A5FA)];
+      case WeatherCondition.snow:
+      case WeatherCondition.snowShowers:
+        return [const Color(0xFF93C5FD), const Color(0xFFBFDBFE)];
+      case WeatherCondition.thunderstorm:
+      case WeatherCondition.thunderstormWithHail:
+        return [const Color(0xFF4B5563), const Color(0xFF6B7280)];
+      default:
+        return [const Color(0xFF3B82F6), const Color(0xFF60A5FA)];
+    }
+  }
+
+  IconData _getWeatherIcon() {
+    if (_conditionKind == null || !_useLiveWeather) {
+      return Icons.wb_sunny_outlined;
+    }
+
+    switch (_conditionKind!) {
+      case WeatherCondition.clear:
+        return Icons.wb_sunny;
+      case WeatherCondition.partlyCloudy:
+        return Icons.wb_cloudy;
+      case WeatherCondition.rain:
+      case WeatherCondition.rainShowers:
+        return Icons.water_drop;
+      case WeatherCondition.snow:
+      case WeatherCondition.snowShowers:
+        return Icons.ac_unit;
+      case WeatherCondition.thunderstorm:
+      case WeatherCondition.thunderstormWithHail:
+        return Icons.flash_on;
+      case WeatherCondition.fog:
+        return Icons.cloud;
+      default:
+        return Icons.wb_sunny_outlined;
+    }
   }
 
   void _applySnapshot(_WeatherSnapshot snapshot) {
@@ -585,19 +711,19 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
   }
 
   Widget _buildSeasonPicker(BuildContext context) {
-    final theme = Theme.of(context);
     return Column(
       key: const ValueKey('manual'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'combineSeasonManualTitle'.tr(),
-          style: theme.textTheme.titleSmall?.copyWith(
+        const Text(
+          'Mevsim Seçimi',
+          style: TextStyle(
+            fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: theme.colorScheme.onSurface,
+            color: Colors.white,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -617,31 +743,31 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
               )
               .toList(),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: theme.colorScheme.primary.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity(0.3),
             ),
           ),
           child: Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.info_outline,
                 size: 16,
-                color: theme.colorScheme.primary,
+                color: Colors.white,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'combineSeasonManualHint'.tr(),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                    height: 1.3,
-                    fontSize: 11,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                    height: 1.4,
                   ),
                 ),
               ),
@@ -652,7 +778,7 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
     );
   }
 
-  Widget _buildLiveWeatherPanel(ThemeData theme) {
+  Widget _buildLiveWeatherPanel() {
     if (_isLoading) {
       return const _WeatherStateBanner.loading(
         key: ValueKey('weather-loading'),
@@ -675,34 +801,35 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _TemperatureOrb(value: _temperature),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     _condition ?? 'weatherConditionUnknown'.tr(),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.colorScheme.onSurface,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   if (_location != null && _location!.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.location_on,
-                          size: 12,
-                          color: theme.colorScheme.primary,
+                          size: 14,
+                          color: Colors.white,
                         ),
-                        const SizedBox(width: 3),
+                        const SizedBox(width: 4),
                         Flexible(
                           child: Text(
                             _location!,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                              fontSize: 12,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.white,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -711,10 +838,10 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
                       ],
                     ),
                   ],
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
-                    runSpacing: 6,
+                    runSpacing: 8,
                     children: [
                       if (_humidity != null)
                         _WeatherMetricPill(
@@ -735,9 +862,9 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         _WeatherMoodGauge(activeMood: inferredMood),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton.icon(
@@ -748,7 +875,7 @@ class _WeatherOverviewCardState extends State<_WeatherOverviewCard> {
               style: const TextStyle(fontSize: 13),
             ),
             style: TextButton.styleFrom(
-              foregroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -829,47 +956,47 @@ class _WeatherStateBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     if (!isError) {
       return Container(
         height: 80,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: theme.colorScheme.surfaceContainerHigh,
+          color: Colors.white.withOpacity(0.15),
           border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+            color: Colors.white.withOpacity(0.3),
           ),
         ),
         alignment: Alignment.center,
-        child: CircularProgressIndicator(
+        child: const CircularProgressIndicator(
           strokeWidth: 2,
-          color: theme.colorScheme.primary,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
         ),
       );
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: theme.colorScheme.errorContainer,
+        color: Colors.white.withOpacity(0.2),
         border: Border.all(
-          color: theme.colorScheme.error.withValues(alpha: 0.3),
+          color: Colors.white.withOpacity(0.4),
         ),
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
-            color: theme.colorScheme.error,
+            color: Colors.white,
             size: 20,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               message ?? '',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onErrorContainer,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -893,14 +1020,13 @@ class _WeatherMetricPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+        color: Colors.white.withOpacity(0.2),
         border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.3),
+          color: Colors.white.withOpacity(0.3),
         ),
       ),
       child: Row(
@@ -908,16 +1034,16 @@ class _WeatherMetricPill extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 14,
-            color: theme.colorScheme.primary,
+            size: 16,
+            color: Colors.white,
           ),
           const SizedBox(width: 6),
           Text(
             '$label · $value',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurface,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.white,
               fontWeight: FontWeight.w600,
-              fontSize: 11,
             ),
           ),
         ],
@@ -933,39 +1059,32 @@ class _TemperatureOrb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
-      width: 70,
-      height: 70,
+      width: 80,
+      height: 80,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            theme.colorScheme.primaryContainer,
-            theme.colorScheme.primary.withValues(alpha: 0.3),
-          ],
-        ),
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.2),
         border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.4),
-          width: 1.5,
+          color: Colors.white.withOpacity(0.4),
+          width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withValues(alpha: 0.15),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: Colors.white.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       alignment: Alignment.center,
       child: Text(
         value ?? '--',
-        style: theme.textTheme.headlineMedium?.copyWith(
-          color: theme.colorScheme.onPrimaryContainer,
+        style: const TextStyle(
+          fontSize: 32,
+          color: Colors.white,
           fontWeight: FontWeight.w900,
-          letterSpacing: -1,
+          letterSpacing: -1.5,
         ),
       ),
     );
@@ -985,41 +1104,40 @@ class _WeatherMoodGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(14),
       ),
-      padding: const EdgeInsets.all(3),
+      padding: const EdgeInsets.all(4),
       child: Row(
         children: _moods
             .map(
               (mood) => Expanded(
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 8,
+                    horizontal: 8,
+                    vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(9),
+                    borderRadius: BorderRadius.circular(10),
                     color: activeMood == mood.value
-                        ? theme.colorScheme.primary
+                        ? Colors.white
                         : Colors.transparent,
                   ),
                   child: Text(
                     mood.labelKey.tr(),
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.labelSmall?.copyWith(
+                    style: TextStyle(
                       color: activeMood == mood.value
-                          ? theme.colorScheme.onPrimary
-                          : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          ? const Color(0xFF3B82F6)
+                          : Colors.white.withOpacity(0.8),
                       fontWeight: activeMood == mood.value
                           ? FontWeight.w700
                           : FontWeight.w500,
-                      fontSize: 11,
+                      fontSize: 12,
                     ),
                   ),
                 ),
@@ -1028,55 +1146,6 @@ class _WeatherMoodGauge extends StatelessWidget {
             .toList(),
       ),
     );
-  }
-
-  static Future<void> _showLimitExceededMessage(BuildContext context, {required bool isClothes}) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) return;
-
-    try {
-      final subscriptionService = SubscriptionService.instance();
-      final subscriptionInfo = await subscriptionService.getUserSubscriptionInfo(userId);
-      final limits = subscriptionInfo['limits'] as SubscriptionPlanLimits;
-      final currentCount = isClothes
-          ? subscriptionInfo['totalClothes'] as int
-          : subscriptionInfo['monthlyCombinationsUsed'] as int;
-      final maxCount = isClothes
-          ? limits.maxClothes
-          : limits.maxCombinationsPerMonth;
-
-      final message = isClothes
-          ? 'Kıyafet ekleme limitinize ulaştınız ($currentCount/$maxCount). Daha fazla kıyafet eklemek için planınızı yükseltin.'
-          : 'Aylık kombin limitinize ulaştınız ($currentCount/$maxCount). Daha fazla kombin oluşturmak için planınızı yükseltin.';
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: const Duration(seconds: 3),
-            action: SnackBarAction(
-              label: 'Yükselt',
-              textColor: Colors.white,
-              onPressed: () {
-                Navigator.of(context).pushNamed(AppRoutes.subscription);
-              },
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      // Hata durumunda basit mesaj göster
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(isClothes
-                ? 'Kıyafet ekleme limitinize ulaştınız. Planınızı yükseltin.'
-                : 'Aylık kombin limitinize ulaştınız. Planınızı yükseltin.'),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
   }
 }
 
@@ -1090,29 +1159,44 @@ class _InsufficientClothesWarning extends StatelessWidget {
     final theme = Theme.of(context);
     final remaining = 10 - currentCount;
 
-    return AppSurfaceCard(
-      padding: const EdgeInsets.all(20),
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.inventory_2_outlined,
-            size: 48,
+            size: 56,
             color: theme.colorScheme.primary,
           ),
           const SizedBox(height: 16),
           Text(
             'Yeterli Kıyafet Yok',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             'Kombin oluşturabilmek için garderobunuzda en az 10 kıyafet olmalı.\nŞu anda $currentCount kıyafetiniz var. ${remaining > 0 ? '$remaining kıyafet daha eklemeniz gerekiyor.' : ''}',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withOpacity(0.7),
+              height: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
