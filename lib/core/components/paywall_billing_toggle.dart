@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 enum PaywallBillingCycle {
@@ -10,15 +11,15 @@ class PaywallBillingToggle extends StatelessWidget {
     super.key,
     required this.selected,
     required this.onChanged,
-    this.monthlyLabel = 'Aylık',
-    this.yearlyLabel = 'Yıllık',
+    this.monthlyLabel,
+    this.yearlyLabel,
     this.highlightLabel,
   });
 
   final PaywallBillingCycle selected;
   final ValueChanged<PaywallBillingCycle> onChanged;
-  final String monthlyLabel;
-  final String yearlyLabel;
+  final String? monthlyLabel;
+  final String? yearlyLabel;
   final String? highlightLabel;
 
   @override
@@ -83,14 +84,14 @@ class PaywallBillingToggle extends StatelessWidget {
                       width: segmentWidth,
                       isSelected: selected == PaywallBillingCycle.monthly,
                       onTap: () => onChanged(PaywallBillingCycle.monthly),
-                      label: monthlyLabel,
+                      label: monthlyLabel ?? 'subscriptionBillingToggleMonthly'.tr(),
                       textStyle: textStyle,
                     ),
                     _ToggleSegment(
                       width: segmentWidth,
                       isSelected: selected == PaywallBillingCycle.yearly,
                       onTap: () => onChanged(PaywallBillingCycle.yearly),
-                      label: yearlyLabel,
+                      label: yearlyLabel ?? 'subscriptionBillingToggleYearly'.tr(),
                       textStyle: textStyle,
                       highlightLabel: highlightLabel,
                     ),

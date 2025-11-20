@@ -582,17 +582,17 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     final packageId = _planToPackageId[planId] ?? planId;
     final package = _packagesMap[packageId];
     if (package != null && package.packageType == PackageType.monthly) {
-      return '/ay';
+      return 'subscriptionBillingMonth'.tr();
     } else if (package != null && package.packageType == PackageType.annual) {
-      return '/yıl';
+      return 'subscriptionBillingYear'.tr();
     }
     
     // Fallback olarak plan cycle'dan al
     final cycle = _planCycleMap[planId];
     if (cycle == PaywallBillingCycle.monthly) {
-      return '/ay';
+      return 'subscriptionBillingMonth'.tr();
     } else if (cycle == PaywallBillingCycle.yearly) {
-      return '/yıl';
+      return 'subscriptionBillingYear'.tr();
     }
     
     return fallbackBilling;
